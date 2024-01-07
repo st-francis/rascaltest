@@ -26,7 +26,7 @@ list[loc] projectChoreographyToProcessSpecifications(ChoreographyConstruct baseC
   createProcessFiles(uniqueProcessNames);
   
   // step 3 fill the files with the required lines
-  fillProcessFiles(baseConstruct, false);
+  projectChoreographyConstruct(baseConstruct, false);
 
   // step 4 finalize file data;
   finalizeProcessFiles();
@@ -37,27 +37,27 @@ list[loc] projectChoreographyToProcessSpecifications(ChoreographyConstruct baseC
   return [processFiles[processName].fileLocation | str processName <- processFiles];
 }
 
-void fillProcessFiles(ChoreographyConstruct choreographyConstruct, bool addSemicolon)
+void projectChoreographyConstruct(ChoreographyConstruct choreographyConstruct, bool addSemicolon)
 {
   switch(choreographyConstruct)
     {
       case (ChoreographyConstruct) `<ChoreographyConstruct firstConstruct>;<ChoreographyConstruct nextConstruct>`:
-        addComposition(firstConstruct, nextConstruct);
+        projectComposition(firstConstruct, nextConstruct);
       case (ChoreographyConstruct) `<ProcessName processName>.<Variable variableName><AssignmentOperator assignmentOperator><VariableValue variableValue>:<Type variableType>`:
-        addAssignment(processName, variableName, variableValue, variableType, assignmentOperator, addSemicolon);
+        projectAssignment(processName, variableName, variableValue, variableType, assignmentOperator, addSemicolon);
       case (ChoreographyConstruct) `<ProcessVariableCall variableCallSen><ExchangeValueDeclaration variableDeclaration>-\><ProcessVariableCall variableCallRec>`:
-        addLinesForInteraction("<variableCallSen.name>", "<variableCallRec.name>", "<variableCallSen.variableName>", "<variableCallRec.variableName>", "<variableDeclaration.variableValue>", "<variableDeclaration.variableType>", addSemicolon);
+        projectInteraction("<variableCallSen.name>", "<variableCallRec.name>", "<variableCallSen.variableName>", "<variableCallRec.variableName>", "<variableDeclaration.variableValue>", "<variableDeclaration.variableType>", addSemicolon);
       case (ChoreographyConstruct) `<ProcessName name><ExchangeValueDeclaration variableDeclaration>-\><ProcessVariableCall variableCallRec>`:
-        addLinesForInteraction("<name>", "<variableCallRec.name>", "", "<variableCallRec.variableName>", "<variableDeclaration.variableValue>", "<variableDeclaration.variableType>", addSemicolon);
+        projectInteraction("<name>", "<variableCallRec.name>", "", "<variableCallRec.variableName>", "<variableDeclaration.variableValue>", "<variableDeclaration.variableType>", addSemicolon);
       case (ChoreographyConstruct) `if(<Expression expression>){<ChoreographyConstruct thenConstruct>}else{<ChoreographyConstruct elseConstruct>}`:
-        addLinesForIfStatement(expression, thenConstruct, elseConstruct, addSemicolon);
+        projectIfStatememt(expression, thenConstruct, elseConstruct, addSemicolon);
       case (ChoreographyConstruct) `while(<Expression expression>){<ChoreographyConstruct whileConstruct>}`:
-        addLinesForWhileStatement(expression, whileConstruct, addSemicolon);
+        projectWhileStatement(expression, whileConstruct, addSemicolon);
       default: throw "no matching construct found!";
     }
 }
 
-void addLinesForWhileStatement(Expression expression, ChoreographyConstruct whileConstruct, bool addSemicolon)
+void projectWhileStatement(Expression expression, ChoreographyConstruct whileConstruct, bool addSemicolon)
 {
   map[str, list[Expression]] expressionsPerProcess = getExpressionsPerProcess(expression);
   // add expressions to files 
@@ -79,7 +79,7 @@ void addLinesForWhileStatement(Expression expression, ChoreographyConstruct whil
   }
 
   // add the while construct;
-  fillProcessFiles(whileConstruct, false);
+  projectChoreographyConstruct(whileConstruct, false);
   for(str processName <- expressionsPerProcess)
   {
     appendLine(processName, "\u0020\u0020}",addSemicolon);
@@ -103,7 +103,7 @@ map[str, list[Expression]] getExpressionsPerProcess(Expression expression)
   return expressionsPerProcess;
 }
 
-void addLinesForIfStatement(Expression expression, ChoreographyConstruct thenConstruct, ChoreographyConstruct elseConstruct, bool addSemicolon)
+void projectIfStatememt(Expression expression, ChoreographyConstruct thenConstruct, ChoreographyConstruct elseConstruct, bool addSemicolon)
 {  
   // Get a map with all the expression belonging to a particular process
   map[str, list[Expression]] expressionsPerProcess = getExpressionsPerProcess(expression);
@@ -126,14 +126,14 @@ void addLinesForIfStatement(Expression expression, ChoreographyConstruct thenCon
     appendLine(processName, line, false);
   }
   // add the then construct;
-  fillProcessFiles(thenConstruct, false);
+  projectChoreographyConstruct(thenConstruct, false);
   for(str processName <- expressionsPerProcess)
   {
     appendLine(processName, "\u0020\u0020}else{",false);
   }
 
   // add the else construct
-  fillProcessFiles(elseConstruct, false);
+  projectChoreographyConstruct(elseConstruct, false);
   for(str processName <- expressionsPerProcess)
   {
     appendLine(processName, "\u0020\u0020}", addSemicolon);
@@ -182,7 +182,7 @@ list[Expression] getExpressionListForExpressions(list[Expression] expressions)
   return expressionList;
 }
 
-void addAssignment(ProcessName processName, Variable variableName, VariableValue variableValue, Type variableType, AssignmentOperator assignmentOperator, bool addSemicolon)
+void projectAssignment(ProcessName processName, Variable variableName, VariableValue variableValue, Type variableType, AssignmentOperator assignmentOperator, bool addSemicolon)
 {
   str operatorStr = "";
   switch(assignmentOperator)
@@ -204,13 +204,13 @@ void addAssignment(ProcessName processName, Variable variableName, VariableValue
   }
 }
 
-void addComposition(ChoreographyConstruct firstConstruct, ChoreographyConstruct nextConstruct)
+void projectComposition(ChoreographyConstruct firstConstruct, ChoreographyConstruct nextConstruct)
 {
-  fillProcessFiles(firstConstruct, true);
-  fillProcessFiles(nextConstruct, false);
+  projectChoreographyConstruct(firstConstruct, true);
+  projectChoreographyConstruct(nextConstruct, false);
 }
 
-void addLinesForInteraction(str sendingProcessName, str receivingProcessName, str varFromName, str varToName, str val, str valType, bool addSemicolon)
+void projectInteraction(str sendingProcessName, str receivingProcessName, str varFromName, str varToName, str val, str valType, bool addSemicolon)
 {
   addSendingInteractionLine(sendingProcessName, receivingProcessName, varFromName, val, valType, addSemicolon);
   addReceivingInteractionLine(receivingProcessName, sendingProcessName, varToName, addSemicolon);
