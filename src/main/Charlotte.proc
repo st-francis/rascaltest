@@ -1,0 +1,21 @@
+process Charlotte 
+{ 
+
+  TAU;
+  TAU;
+  Alice?z1;
+  TAU;
+  TAU;
+  if(Charlotte.z1==11){
+  TAU
+  }else{
+  TAU
+  };
+  while(Charlotte.z1==11){
+  TAU;
+  TAU;
+  TAU;
+  Alice?z1;
+  TAU
+  }
+}

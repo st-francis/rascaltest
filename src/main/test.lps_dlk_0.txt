@@ -1,0 +1,4 @@
+player2_y_is_0_Int
+player1_x_is_0_Int
+REENTERING
+player1_x_plus_is_1_Int

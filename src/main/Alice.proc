@@ -1,0 +1,15 @@
+process Alice 
+{ 
+
+  x1 := 11:Int;
+  Bob!(11:Int);
+  if(Alice.x1==11){
+  Bob!(11:Int)
+  }else{
+  Bob?y1
+  };
+  while(Alice.x1==11){
+  x1 := 12:Int;
+  Bob!(12:Int)
+  }
+}

@@ -1,0 +1,9 @@
+process player2 
+{ 
+
+  TAU;
+  y := 0:Int;
+  while(player2.y!=5){
+  TAU
+  }
+}

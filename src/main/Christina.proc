@@ -1,0 +1,17 @@
+process Christina 
+{ 
+
+  TAU;
+  z1 := 11:Int;
+  TAU;
+  if(Christina.z1==11){
+  TAU
+  }else{
+  TAU
+  };
+  while(Christina.z1==11){
+  TAU;
+  z1 := 12:Int;
+  TAU
+  }
+}

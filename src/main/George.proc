@@ -1,0 +1,8 @@
+process George 
+{ 
+  TAU;
+  x3 := 10:Int;
+  TAU;
+  TAU;
+  TAU
+}

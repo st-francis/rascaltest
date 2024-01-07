@@ -1,0 +1,9 @@
+process player1 
+{ 
+
+  x := 0:Int;
+  TAU;
+  while(player1.x!=5){
+  x += 1:Int
+  }
+}
