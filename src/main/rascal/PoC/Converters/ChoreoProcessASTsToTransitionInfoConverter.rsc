@@ -302,13 +302,6 @@ ProcessTransitionContainer getProcessTransitionContainerForWhileStatement(Proces
   for (str name <- previousActionList.processInfo) {
     if (getFirstFrom(evaluationResults)) 
     {
-      // bool hasDifferences = doesWhileContentMakeAnyDifference(whileStatements , previousActionList, prevStateNo);
-      // bool equivalentStateAlreadyExists = equivalentProcessesStateExists(previousActionList, containers);
-      // if(!hasDifferences && equivalentStateAlreadyExists)
-      // {
-      //   return EmptyProcessTransitionContainer();
-      // }
-
       AProcessConstruct first = AEmptyProcessConstruct();
       AProcessConstruct second = AEmptyProcessConstruct();
       if(whileConstructs[name] is AProcessSequentialComposition)

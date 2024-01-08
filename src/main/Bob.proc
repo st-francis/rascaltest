@@ -2,8 +2,15 @@ process Bob
 { 
 
   TAU;
+  Alice?y1;
+  if(Bob.y1==11){
+  Alice?y1
+  }else{
+  Alice!(11:Int)
+  };
   while(Bob.y1!=13){
-  TAU
+  TAU;
+  Alice?y1
   };
   TAU
 }

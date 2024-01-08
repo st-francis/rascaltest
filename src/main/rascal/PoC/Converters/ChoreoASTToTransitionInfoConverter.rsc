@@ -185,7 +185,7 @@ set[TransitionContainer] getStateProcessInteractions(AChoreographyConstruct chor
     case AIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct):
       return transitionContainerForIfStatement(choreographyConstruct, expression, thenConstruct, elseConstruct, currentState, variableAssignments);
     case AWhileStatement(AExpression expression, AChoreographyConstruct whileConstruct):
-      return transitionContainerForWhileStatement(choreographyConstruct, expression, whileConstruct, currentState, variableAssignments, partOfComposition, originalConstruct);
+      return transitionContainerForWhileStatement(choreographyConstruct, currentState, variableAssignments, partOfComposition, originalConstruct);
     case AEmptyChoreographyConstruct():
       return {};
     default: throw "No matching choreography construct found!";
@@ -273,59 +273,43 @@ bool equivalentStateExists(AChoreographyConstruct remainingConstruct, map[str, m
 }
 
 // Function returns the containers when an while-statement is encountered 
-// INPUT  : @whileConstruct the construct for the while-statement
-// INPUT  : @expression the expression for the while-statement
-// INPUT  : @whileConstruct the construct that needs to be evaluated if the expression evaluates to true
+// INPUT  : @baseConstruct the construct for the while-statement
 // INPUT  : @currentState the current state number
 // INPUT  : @variableAssignments the current variableAssignments
 // OUTPUT : The set of containers based on the while-statement
-set[TransitionContainer] transitionContainerForWhileStatement(AChoreographyConstruct baseConstruct, AExpression expression, AChoreographyConstruct whileConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool partOfComposition, AChoreographyConstruct originalConstruct)
+set[TransitionContainer] transitionContainerForWhileStatement(AChoreographyConstruct baseConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool partOfComposition, AChoreographyConstruct baseConstructWithAdditionalConstructs)
 {
-  bool enterWhile = evaluateExpression(expression, variableAssignments);
+  bool enterWhile = evaluateExpression(baseConstruct.expression, variableAssignments);
 
+  AChoreographyConstruct remainingConstruct = AEmptyChoreographyConstruct();
   if(enterWhile)
   {
-      AChoreographyConstruct remainingConstruct = (partOfComposition) ? whileConstruct : AChoreographyComposition(whileConstruct, baseConstruct);
+      remainingConstruct = (partOfComposition) ? baseConstruct.whileConstruct : AChoreographyComposition(baseConstruct.whileConstruct, baseConstruct);
 
-      // Added
-      AChoreographyConstruct tbchecked = remainingConstruct;
-      if(!(originalConstruct is AEmptyChoreographyConstruct))
+      AChoreographyConstruct constructToBeChecked = remainingConstruct;
+      if(!(baseConstructWithAdditionalConstructs is AEmptyChoreographyConstruct))
       {
-        tbchecked = AChoreographyComposition(remainingConstruct, originalConstruct);
+        constructToBeChecked = AChoreographyComposition(remainingConstruct, baseConstructWithAdditionalConstructs);
       }
       
-      bool whileContentMakesAnyDifference = doesWhileContentMakeAnyDifference(whileConstruct, variableAssignments);
-      bool equivalentStateAlreadyExists = equivalentStateExists(tbchecked, variableAssignments);
+      bool whileContentMakesAnyDifference = doesWhileContentMakeAnyDifference(baseConstruct.whileConstruct, variableAssignments);
+      bool equivalentStateAlreadyExists = equivalentStateExists(constructToBeChecked, variableAssignments);
       if(!whileContentMakesAnyDifference && equivalentStateAlreadyExists)
       {
         return {};
       }
-    
+  }
 
-      return {TransitionContainer(baseConstruct, 
+  return {TransitionContainer(baseConstruct, 
                                   TransitionContainerExtraInfo(remainingConstruct, 
                                                               TransitionInfo(
                                                                 currentState, 
                                                                 getStateCounter(AEmptyChoreographyConstruct(), false, variableAssignments),
                                                                 false,
                                                                 WhileDecisionLabelInfo(
-                                                                  true
+                                                                  enterWhile
                                                                 )),
                                                               variableAssignments))};
-  }
-  else
-  {
-      return {TransitionContainer(baseConstruct, 
-                                      TransitionContainerExtraInfo(AEmptyChoreographyConstruct(), 
-                                                                  TransitionInfo(
-                                                                    currentState, 
-                                                                    getStateCounter(AEmptyChoreographyConstruct(), false, variableAssignments),
-                                                                    false,
-                                                                    WhileDecisionLabelInfo(
-                                                                      false
-                                                                    )),
-                                                                  variableAssignments))};
-  }
 }
 
 // Function returns the containers when an if-statement is encountered 
