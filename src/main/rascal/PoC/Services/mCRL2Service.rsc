@@ -13,18 +13,39 @@ str defaultmCRL2Location = "M:/Programs/mCRL2/bin/";
 bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fileName)
 {
   println("Checking!");
-  remove(|file:///<defaultFileLocation><fileName>.lps_dlk_0.trc|);
+
+  cleanTraceFiles(fileName);
 
   CreateAldabaranLTSFiles(labels, machine, fileName);
  
   CreateLPSFileForAldabaranLTSFiles("<fileName>.aut", "<fileName>.mcrl2", "<fileName>.lps");
 
   CreateLTSFileForLPS("<fileName>.lps", "<fileName>.lts");
-
-  return hasDeadlockOccured(fileName);
+  
+  bool isDeadlockFree = isLTSDeadlockFree(fileName); 
+  if(isDeadlockFree)
+  {
+    checkDivergence(fileName);
+  }
+  return isDeadlockFree;
 }
 
-bool hasDeadlockOccured(str fileName)
+void cleanTraceFiles(str fileName)
+{
+  remove(|file:///<defaultFileLocation><fileName>.lps_dlk_0.trc|);
+  remove(|file:///<defaultFileLocation><fileName>.lps_divergence_0.trc|);
+  remove(|file:///<defaultFileLocation><fileName>.lps_divergence_loop0.trc|);
+}
+
+void checkDivergence(str fileName)
+{
+  if(!exists(|file:///<defaultFileLocation><fileName>.lps_divergence_0.trc|))
+  {
+    println("Livelock has occured!");
+  }
+}
+
+bool isLTSDeadlockFree(str fileName)
 {
   if(exists(|file:///<defaultFileLocation><fileName>.lps_dlk_0.trc|))
   {
@@ -92,7 +113,7 @@ void CreateLTSFileForLPS(str inputLPSFileName, str outputLTSFileName)
 
   remove(|file:///<defaultFileLocation><outputLTSFileName>|);
 
-  commArgs = ["--deadlock", "--trace", "--verbose","<defaultFileLocation><inputLPSFileName>", "<defaultFileLocation><outputLTSFileName>"];
+  commArgs = ["--deadlock", "--divergence", "--trace", "--tau=T","--verbose","<defaultFileLocation><inputLPSFileName>", "<defaultFileLocation><outputLTSFileName>"];
   execute("lps2lts", commArgs);
 }
 

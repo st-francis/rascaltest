@@ -25,15 +25,15 @@ AChoreographyConstruct parseChoreographyConstruct(ChoreographyConstruct construc
   switch(construct)
   {
     case (ChoreographyConstruct) `<ChoreographyConstruct firstConstruct>;<ChoreographyConstruct nextConstruct>`:
-      return AChoreographyComposition(parseAbstractChoreographyConstruct(firstConstruct), parseAbstractChoreographyConstruct(nextConstruct));
+      return AChoreographyComposition(parseChoreographyConstruct(firstConstruct), parseChoreographyConstruct(nextConstruct));
     case (ChoreographyConstruct) `<ProcessVariableCall variableCallSen><ExchangeValueDeclaration variableDeclaration>-\><ProcessVariableCall variableCallRec>`:
       return AProcessInteraction(AProcess("<variableCallSen.name>", "<variableCallSen.variableName>"), AExchangeValueDeclaration("<variableDeclaration.variableValue>", "<variableDeclaration.variableType>"), AProcess("<variableCallRec.name>", "<variableCallRec.variableName>"));
     case (ChoreographyConstruct) `<ProcessName name><ExchangeValueDeclaration variableDeclaration>-\><ProcessVariableCall variableCallRec>`:
       return AProcessInteraction(AProcess("<name>", ""), AExchangeValueDeclaration("<variableDeclaration.variableValue>", "<variableDeclaration.variableType>"), AProcess("<variableCallRec.name>", "<variableCallRec.variableName>"));
     case (ChoreographyConstruct) `if(<Expression expression>){<ChoreographyConstruct thenConstruct>}else{<ChoreographyConstruct elseConstruct>}`:
-      return AIfStatement(parseAbstractExpression(expression), parseAbstractChoreographyConstruct(thenConstruct), parseAbstractChoreographyConstruct(elseConstruct));
+      return AIfStatement(parseAbstractExpression(expression), parseChoreographyConstruct(thenConstruct), parseChoreographyConstruct(elseConstruct));
     case (ChoreographyConstruct) `while(<Expression expression>){<ChoreographyConstruct whileConstruct>}`:
-      return AWhileStatement(parseAbstractExpression(expression), parseAbstractChoreographyConstruct(whileConstruct));
+      return AWhileStatement(parseAbstractExpression(expression), parseChoreographyConstruct(whileConstruct));
     case (ChoreographyConstruct) `<ProcessName processName>.<Variable variableName><AssignmentOperator assignmentOperator><VariableValue variableValue>:<Type variableType>`:
       return AVariableAssignment("<processName>", "<variableName>", AExchangeValueDeclaration("<variableValue>", "<variableType>"), parseAbstractAssignmentOperator(assignmentOperator));
     default: throw "no matching construct found!";

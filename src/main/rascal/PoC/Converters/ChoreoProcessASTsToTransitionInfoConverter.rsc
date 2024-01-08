@@ -302,11 +302,12 @@ ProcessTransitionContainer getProcessTransitionContainerForWhileStatement(Proces
   for (str name <- previousActionList.processInfo) {
     if (getFirstFrom(evaluationResults)) 
     {
-      bool hasDifferences = doesWhileContentMakeAnyDifference(whileStatements , previousActionList, prevStateNo);
-      if(!hasDifferences)
-      {
-        return EmptyProcessTransitionContainer();
-      }
+      // bool hasDifferences = doesWhileContentMakeAnyDifference(whileStatements , previousActionList, prevStateNo);
+      // bool equivalentStateAlreadyExists = equivalentProcessesStateExists(previousActionList, containers);
+      // if(!hasDifferences && equivalentStateAlreadyExists)
+      // {
+      //   return EmptyProcessTransitionContainer();
+      // }
 
       AProcessConstruct first = AEmptyProcessConstruct();
       AProcessConstruct second = AEmptyProcessConstruct();
@@ -330,6 +331,13 @@ ProcessTransitionContainer getProcessTransitionContainerForWhileStatement(Proces
     }
   }
 
+  bool hasDifferences = doesWhileContentMakeAnyDifference(whileStatements , previousActionList, prevStateNo);
+  bool equivalentStateAlreadyExists = equivalentProcessesStateExists(previousActionList, containers);
+  if(!hasDifferences && equivalentStateAlreadyExists)
+  {
+    return EmptyProcessTransitionContainer();
+  }
+
   // STEP 5: return the process container where all the process have evaluated the if-statement
   TransitionInfo transitionInfo = TransitionInfo(
                                       prevStateNo,
@@ -340,6 +348,20 @@ ProcessTransitionContainer getProcessTransitionContainerForWhileStatement(Proces
 
 
     return ProcessTransitionContainer(previousActionList, transitionInfo);
+}
+
+bool equivalentProcessesStateExists(ProcessActionList processActionList, set[ProcessTransitionContainer] toBeCheckedContainers)
+{
+  for(ProcessTransitionContainer container <- toBeCheckedContainers)
+  {  
+    bool allRemainingConstructsEqual = areAllRemainingConstructsEqual(container.actionList, processActionList); 
+
+    if(allRemainingConstructsEqual)
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 AProcessConstruct recursivelyBuildProcessConstructForWhileStatements(str processName, AProcessConstruct construct, map[str, AProcessConstruct] whileStatements)

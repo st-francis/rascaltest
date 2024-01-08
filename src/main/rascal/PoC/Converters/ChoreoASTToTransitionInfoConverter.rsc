@@ -100,7 +100,7 @@ set[TransitionContainer] processNextInteractions(set[TransitionContainer] previo
 
     for (TransitionContainer previousInteraction <- previousInteractions)
     {
-        set[TransitionContainer] requiredInteractions = getStateProcessInteractions(previousInteraction.extraInfo.requiredChor, previousInteraction.extraInfo.transitionInfo.nextStateNo, previousInteraction.extraInfo.variableAssignments, false);
+        set[TransitionContainer] requiredInteractions = getStateProcessInteractions(previousInteraction.extraInfo.requiredChor, previousInteraction.extraInfo.transitionInfo.nextStateNo, previousInteraction.extraInfo.variableAssignments, false, AEmptyChoreographyConstruct());
         newProcessInteractions += processRequiredInteractionsWithValidStateCounter(requiredInteractions);
         transitionContainers += newProcessInteractions;
     }
@@ -141,7 +141,7 @@ set[TransitionContainer] getInitialProcessInteractions(AChoreographyConstruct ch
                     interaction.extraInfo.variableAssignments
                 )
             )
-            | TransitionContainer interaction <- getStateProcessInteractions(choreographyConstruct, getStateCounter(AEmptyChoreographyConstruct(), false, initialVariableAssignments), initialVariableAssignments, false)};
+            | TransitionContainer interaction <- getStateProcessInteractions(choreographyConstruct, getStateCounter(AEmptyChoreographyConstruct(), false, initialVariableAssignments), initialVariableAssignments, false, AEmptyChoreographyConstruct())};
 }
 
 // Function adds a tau transition to all states that have a terminating choreography construct
@@ -172,7 +172,7 @@ set[TransitionContainer] getTauContainersForContainers(set[TransitionContainer] 
 // INPUT  : @choreographyConstruct - the related construct that is switched on
 // INPUT  : @currentState - the current state number 
 // OUTPUT : The set of containers that are returned based on the construct
-set[TransitionContainer] getStateProcessInteractions(AChoreographyConstruct choreographyConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool partOfComposition)
+set[TransitionContainer] getStateProcessInteractions(AChoreographyConstruct choreographyConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool partOfComposition, AChoreographyConstruct originalConstruct)
 { 
   switch(choreographyConstruct)
   {
@@ -185,7 +185,7 @@ set[TransitionContainer] getStateProcessInteractions(AChoreographyConstruct chor
     case AIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct):
       return transitionContainerForIfStatement(choreographyConstruct, expression, thenConstruct, elseConstruct, currentState, variableAssignments);
     case AWhileStatement(AExpression expression, AChoreographyConstruct whileConstruct):
-      return transitionContainerForWhileStatement(choreographyConstruct, expression, whileConstruct, currentState, variableAssignments, partOfComposition);
+      return transitionContainerForWhileStatement(choreographyConstruct, expression, whileConstruct, currentState, variableAssignments, partOfComposition, originalConstruct);
     case AEmptyChoreographyConstruct():
       return {};
     default: throw "No matching choreography construct found!";
@@ -259,6 +259,19 @@ bool doesWhileContentMakeAnyDifference(AChoreographyConstruct whileConstruct, ma
   return hasDifference;
 }
 
+bool equivalentStateExists(AChoreographyConstruct remainingConstruct, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
+{
+  for(TransitionContainer container <- transitionContainers)
+  {
+    if(container.extraInfo.requiredChor == remainingConstruct && container.extraInfo.variableAssignments == variableAssignments)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Function returns the containers when an while-statement is encountered 
 // INPUT  : @whileConstruct the construct for the while-statement
 // INPUT  : @expression the expression for the while-statement
@@ -266,19 +279,28 @@ bool doesWhileContentMakeAnyDifference(AChoreographyConstruct whileConstruct, ma
 // INPUT  : @currentState the current state number
 // INPUT  : @variableAssignments the current variableAssignments
 // OUTPUT : The set of containers based on the while-statement
-set[TransitionContainer] transitionContainerForWhileStatement(AChoreographyConstruct baseConstruct, AExpression expression, AChoreographyConstruct whileConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool partOfComposition)
+set[TransitionContainer] transitionContainerForWhileStatement(AChoreographyConstruct baseConstruct, AExpression expression, AChoreographyConstruct whileConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool partOfComposition, AChoreographyConstruct originalConstruct)
 {
   bool enterWhile = evaluateExpression(expression, variableAssignments);
 
   if(enterWhile)
   {
+      AChoreographyConstruct remainingConstruct = (partOfComposition) ? whileConstruct : AChoreographyComposition(whileConstruct, baseConstruct);
+
+      // Added
+      AChoreographyConstruct tbchecked = remainingConstruct;
+      if(!(originalConstruct is AEmptyChoreographyConstruct))
+      {
+        tbchecked = AChoreographyComposition(remainingConstruct, originalConstruct);
+      }
+      
       bool whileContentMakesAnyDifference = doesWhileContentMakeAnyDifference(whileConstruct, variableAssignments);
-      if(!whileContentMakesAnyDifference)
+      bool equivalentStateAlreadyExists = equivalentStateExists(tbchecked, variableAssignments);
+      if(!whileContentMakesAnyDifference && equivalentStateAlreadyExists)
       {
         return {};
       }
-      
-      AChoreographyConstruct remainingConstruct = (partOfComposition) ? whileConstruct : AChoreographyComposition(whileConstruct, baseConstruct);
+    
 
       return {TransitionContainer(baseConstruct, 
                                   TransitionContainerExtraInfo(remainingConstruct, 
@@ -455,7 +477,7 @@ set[TransitionContainer] transitionContainerForComposition(AChoreographyConstruc
                                               ),
                                               interaction.extraInfo.variableAssignments
                                             ))
-                                            | TransitionContainer interaction <- getStateProcessInteractions(composition.firstConstruct, currentState, variableAssignments, true)};
+                                            | TransitionContainer interaction <- getStateProcessInteractions(composition.firstConstruct, currentState, variableAssignments, true, toBeAddedToFirstConstruct)};
 
 
   // (2) Getting set2
@@ -471,7 +493,7 @@ set[TransitionContainer] transitionContainerForComposition(AChoreographyConstruc
                                                 ),
                                                 interaction.extraInfo.variableAssignments)
                                             ) 
-                                          | TransitionContainer interaction <- getStateProcessInteractions(composition.secondConstruct, currentState, variableAssignments, true)
+                                          | TransitionContainer interaction <- getStateProcessInteractions(composition.secondConstruct, currentState, variableAssignments, true, composition.secondConstruct)
                                           , !hasOverlappingProcessNames(tryGetFirstChoreographyConstruct(set1), interaction.construct)};
 
   // (3) Unifying the two sets
