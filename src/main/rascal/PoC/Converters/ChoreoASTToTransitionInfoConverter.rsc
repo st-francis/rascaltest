@@ -1,7 +1,6 @@
 module PoC::Converters::ChoreoASTToTransitionInfoConverter
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
-import PoC::ChoreoLanguage::ChoreoConcrete;
 
 import PoC::CommonLanguageElements::ExpressionAbstract;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
@@ -13,8 +12,6 @@ import PoC::Evaluators::ExpressionASTEvaluator;
 import List;
 import Set;
 import IO;
-import Map;
-import Boolean;
 import String;
 
 int stateCounter = 0;
@@ -52,13 +49,14 @@ set[TransitionInfo] convertChoreoASTToTransitionInfo(AChoreographyConstruct chor
   
   if(isTerminatingChorConstruct(choreographyConstruct))
   {
-    return {getTauContainer(stateCounter, 
+    return {getTauContainer(stateCounter,
+              0, 
               AProcessInteraction(
                 AEmptyProcess(),
                 AEmptyExchangeValueDeclaration(), 
                 AEmptyProcess()),
                 AEmptyChoreographyConstruct(), 
-                ())};
+                ()).extraInfo.transitionInfo};
   }
 
   return buildTransitionInfo(choreographyConstruct);
@@ -562,7 +560,7 @@ set[str] getNamesForChoreographyConstruct(AChoreographyConstruct construct)
       return {sendingProcess.name, receivingProcess.name};
     case AVariableAssignment(str processName, str _, AExchangeValueDeclaration _, AAssignmentOperator _):
       return {processName};
-    case AEmptyChoreographyConstruct:
+    case AEmptyChoreographyConstruct():
       return {};
     default: throw "No matching choreography construct found!";
   }

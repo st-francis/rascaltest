@@ -167,9 +167,9 @@ list[Expression] getExpressionListForExpressions(list[Expression] expressions)
   {
     switch(expr)
     {
-      case (Expression) `<Expression expression1>==<Expression expression2>`:
+      case (Expression) `<Expression _>==<Expression _>`:
                 expressionList += expr;
-      case (Expression) `<Expression expression1>!=<Expression expression2>`:
+      case (Expression) `<Expression _>!=<Expression _>`:
                 expressionList += expr;
       case (Expression) `<Expression expression1>&&<Expression expression2>`:
                 expressionList += getExpressionListForExpressions([expression1, expression2]);

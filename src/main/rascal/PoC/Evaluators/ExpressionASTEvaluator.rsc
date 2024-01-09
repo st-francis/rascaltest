@@ -35,9 +35,9 @@ AExpression getExpressionValue(AExpression expression, map[str, map[str, AExchan
 {
   switch(expression)
   {
-    case AIntExpression(int intValue):
+    case AIntExpression(int _):
       return expression;
-    case ABoolExpression(bool boolValue):
+    case ABoolExpression(bool _):
       return expression;
     case AProcessVariableDeclarationExpression(AProcess process): 
       return getExpressionValueForProcessDeclaration(process, varAssignments);

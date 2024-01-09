@@ -6,7 +6,6 @@ import PoC::Converters::ChoreoProcessASTsToTransitionInfoConverter;
 import PoC::Converters::ChoreoASTToTransitionInfoConverter;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
-import IO;
 import String;
 
 

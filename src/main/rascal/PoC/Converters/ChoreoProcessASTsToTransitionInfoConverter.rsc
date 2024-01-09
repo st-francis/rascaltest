@@ -8,7 +8,6 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
 import PoC::Evaluators::ExpressionASTEvaluator;
 
-import Map;
 import Set;
 import List;
 import String;
@@ -170,17 +169,17 @@ ProcessTransitionContainer getProcessTransitionContainerForProcessConstruct(str 
 {
   switch(processConstruct)
   {
-    case AProcessInteractionInput(str varName, str outputProcessName):
-      return getProcessTransitionContainerForProcessInteraction(outputProcessName, processName, processConstruct, previousActionList, prevStateNo);
-    case AProcessInteractionOutput(str varName, AExchangeValueDeclaration exchangeValue, str outputProcessName):
-      return getProcessTransitionContainerForProcessInteraction(processName, outputProcessName, processConstruct, previousActionList, prevStateNo);
-    case AProcessSequentialComposition(AProcessConstruct construct1, AProcessConstruct construct2):
+    case AProcessInteractionInput(str _, str outputProcessName):
+      return getProcessTransitionContainerForProcessInteraction(outputProcessName, processName, previousActionList, prevStateNo);
+    case AProcessInteractionOutput(str _, AExchangeValueDeclaration _, str outputProcessName):
+      return getProcessTransitionContainerForProcessInteraction(processName, outputProcessName, previousActionList, prevStateNo);
+    case AProcessSequentialComposition(AProcessConstruct _, AProcessConstruct _):
       return getProcessTransitionContainerForProcessConstruct(processName, processConstruct.construct1, previousActionList, prevStateNo);
     case AProcessAssignment(str variableName, AExchangeValueDeclaration exchangeValue, AAssignmentOperator assignmentOperator):
       return getProcessTransitionContainerForAssignment(processName, variableName, exchangeValue, assignmentOperator, previousActionList, prevStateNo);
-    case AProcessIfStatement(AExpression expression, AProcessConstruct thenConstruct, AProcessConstruct elseConstruct):
+    case AProcessIfStatement(AExpression _, AProcessConstruct _, AProcessConstruct _):
       return getProcessTransitionContainerForIfStatement(previousActionList, prevStateNo);
-    case AProcessWhileStatement(AExpression expression, AProcessConstruct whileConstruct):
+    case AProcessWhileStatement(AExpression _, AProcessConstruct _):
       return getProcessTransitionContainerForWhileStatement(previousActionList, prevStateNo);
     case ATauConstruct():
       return getContainerForTauConstruct(processName, previousActionList, prevStateNo);
@@ -557,7 +556,7 @@ ProcessTransitionContainer getProcessTransitionContainerForAssignment(str proces
   return  ProcessTransitionContainer(updatedActionList, transitionInfo);
 }
 
-ProcessTransitionContainer getProcessTransitionContainerForProcessInteraction(str sendingProcessName, str receivingProcessName, AProcessConstruct processConstruct, ProcessActionList previousActionList, int prevStateNo)
+ProcessTransitionContainer getProcessTransitionContainerForProcessInteraction(str sendingProcessName, str receivingProcessName, ProcessActionList previousActionList, int prevStateNo)
 {
   if(size(previousActionList.processInfo[sendingProcessName]) == 0 || size(previousActionList.processInfo[receivingProcessName]) == 0)
   {

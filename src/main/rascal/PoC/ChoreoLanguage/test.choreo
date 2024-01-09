@@ -11,10 +11,9 @@ choreo testChoreo
     Bob (11:Int) -> Alice.y1
   };
 
-  while(Alice.x1 != 13 && Bob.y1 != 13)
+  while(Alice.x1 != 12 && Bob.y1 != 12)
   {
     Alice.x1 := 12:Int;
     Alice (12:Int) -> Bob.y1
-  };
-  Alice.x1 := 13:Int
+  }
 }
