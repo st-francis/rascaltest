@@ -176,15 +176,15 @@ set[TransitionContainer] getStateProcessInteractions(AChoreographyConstruct chor
 { 
   switch(choreographyConstruct)
   {
-    case AChoreographyComposition(AChoreographyConstruct firstConstruct, AChoreographyConstruct secondConstruct):
+    case AChoreographyComposition(AChoreographyConstruct _, AChoreographyConstruct _):
       return transitionContainerForComposition(choreographyConstruct, currentState, variableAssignments);
-    case AProcessInteraction(AProcess sendingProcess, AExchangeValueDeclaration exchangeValueDeclaration, AProcess receivingProcess):
+    case AProcessInteraction(AProcess _, AExchangeValueDeclaration _, AProcess _):
       return transitionContainerForInteraction(choreographyConstruct, currentState, variableAssignments);
-    case AVariableAssignment(str processName, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator):
+    case AVariableAssignment(str _, str _, AExchangeValueDeclaration _, AAssignmentOperator _):
       return transitionContainerForAssignment(choreographyConstruct, currentState, variableAssignments);
     case AIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct):
       return transitionContainerForIfStatement(choreographyConstruct, expression, thenConstruct, elseConstruct, currentState, variableAssignments);
-    case AWhileStatement(AExpression expression, AChoreographyConstruct whileConstruct):
+    case AWhileStatement(AExpression _, AChoreographyConstruct _):
       return transitionContainerForWhileStatement(choreographyConstruct, currentState, variableAssignments, partOfComposition, originalConstruct);
     case AEmptyChoreographyConstruct():
       return {};
@@ -199,7 +199,7 @@ map[str, map[str, AExchangeValueDeclaration]] getVariableAssignmentsForWhileCons
   {
      case AChoreographyComposition(AChoreographyConstruct firstConstruct, AChoreographyConstruct secondConstruct):
       tempVariableAssignments += getVariableAssignmentsForWhileConstructContent(firstConstruct,  variableAssignments) + getVariableAssignmentsForWhileConstructContent(secondConstruct, variableAssignments);
-    case AProcessInteraction(AProcess sendingProcess, AExchangeValueDeclaration exchangeValueDeclaration, AProcess receivingProcess):
+    case AProcessInteraction(AProcess _, AExchangeValueDeclaration exchangeValueDeclaration, AProcess receivingProcess):
       tempVariableAssignments += updateVariableAssignment(receivingProcess.name, receivingProcess.variableName, exchangeValueDeclaration, variableAssignments, AEmptyAssignmentOperator());
     case AVariableAssignment(str processName, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator):
       tempVariableAssignments += updateVariableAssignment(processName, variableName, exchangeValueDeclaration, variableAssignments, assignmentOperator);
@@ -554,13 +554,13 @@ set[str] getNamesForChoreographyConstruct(AChoreographyConstruct construct)
 {
   switch(construct)
   {
-    case AIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct):
+    case AIfStatement(AExpression expression, AChoreographyConstruct _, AChoreographyConstruct _):
       return getExpressionNames(expression);
-    case AWhileStatement(AExpression expression, AChoreographyConstruct whileConstruct):
+    case AWhileStatement(AExpression expression, AChoreographyConstruct _):
       return getExpressionNames(expression);
-    case AProcessInteraction(AProcess sendingProcess, AExchangeValueDeclaration exchangeValueDeclaration, AProcess receivingProcess):
+    case AProcessInteraction(AProcess sendingProcess, AExchangeValueDeclaration _, AProcess receivingProcess):
       return {sendingProcess.name, receivingProcess.name};
-    case AVariableAssignment(str processName, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator):
+    case AVariableAssignment(str processName, str _, AExchangeValueDeclaration _, AAssignmentOperator _):
       return {processName};
     case AEmptyChoreographyConstruct:
       return {};
@@ -595,9 +595,9 @@ set[str] getExpressionName(AExpression expression)
 {
   switch(expression)
   {
-    case AIntExpression(int intValue):
+    case AIntExpression(int _):
       return {};
-    case ABoolExpression(bool boolValue):
+    case ABoolExpression(bool _):
       return {};
     case AProcessVariableDeclarationExpression(AProcess process): 
       return {process.name};
@@ -631,15 +631,15 @@ bool isTerminatingChorConstruct(AChoreographyConstruct chorConstruct)
 {
   switch(chorConstruct)
   {
-    case AProcessInteraction(AProcess sendingProcess, AExchangeValueDeclaration exchangeValueDeclaration, AProcess receivingProcess):
+    case AProcessInteraction(AProcess _, AExchangeValueDeclaration _, AProcess _):
       return false;
-    case AChoreographyComposition(AChoreographyConstruct firstConstruct, AChoreographyConstruct secondConstruct):
+    case AChoreographyComposition(AChoreographyConstruct _, AChoreographyConstruct _):
       return false;
-    case AVariableAssignment(str processName, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator):
+    case AVariableAssignment(str _, str _, AExchangeValueDeclaration _, AAssignmentOperator _):
       return false;
-    case AIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct):
+    case AIfStatement(AExpression _, AChoreographyConstruct _, AChoreographyConstruct _):
       return false;
-    case AWhileStatement(AExpression expression, AChoreographyConstruct whileConstruct):
+    case AWhileStatement(AExpression _, AChoreographyConstruct _):
       return false; 
     case AEmptyChoreographyConstruct():
       return true;
