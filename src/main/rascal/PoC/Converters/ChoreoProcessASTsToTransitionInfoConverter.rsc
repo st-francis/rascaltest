@@ -175,8 +175,8 @@ ProcessTransitionContainer getProcessTransitionContainerForProcessConstruct(str 
       return getProcessTransitionContainerForProcessInteraction(processName, outputProcessName, previousActionList, prevStateNo);
     case AProcessSequentialComposition(AProcessConstruct _, AProcessConstruct _):
       return getProcessTransitionContainerForProcessConstruct(processName, processConstruct.construct1, previousActionList, prevStateNo);
-    case AProcessAssignment(str variableName, AExchangeValueDeclaration exchangeValue, AAssignmentOperator assignmentOperator):
-      return getProcessTransitionContainerForAssignment(processName, variableName, exchangeValue, assignmentOperator, previousActionList, prevStateNo);
+    case AProcessAssignment(str _, AExchangeValueDeclaration _, AAssignmentOperator _):
+      return getProcessTransitionContainerForAssignment(processName, processConstruct, previousActionList, prevStateNo);
     case AProcessIfStatement(AExpression _, AProcessConstruct _, AProcessConstruct _):
       return getProcessTransitionContainerForIfStatement(previousActionList, prevStateNo);
     case AProcessWhileStatement(AExpression _, AProcessConstruct _):
@@ -533,10 +533,10 @@ ProcessTransitionContainer getContainerForTauConstruct(str processName, ProcessA
   return getTauContainer(newActionList, previousStateNo, getStateCounterForProcesses(EmptyActionList(), false, {}));
 }
 
-ProcessTransitionContainer getProcessTransitionContainerForAssignment(str processName, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator,ProcessActionList previousActionList, int prevStateNo)
+ProcessTransitionContainer getProcessTransitionContainerForAssignment(str processName, AProcessConstruct processConstruct, ProcessActionList previousActionList, int prevStateNo)
 {
   map[str, map[str, AExchangeValueDeclaration]] varAssignments = ();
-  varAssignments = updateVariableAssignment(previousActionList, "<processName>", "<variableName>", exchangeValueDeclaration, assignmentOperator);
+  varAssignments = updateVariableAssignment(previousActionList, "<processName>", "<processConstruct.variableName>", processConstruct.exchangeValue, processConstruct.assignmentOperator);
   
   previousActionList.processInfo[processName] = getNextRequiredProcessConstructs(previousActionList.processInfo[processName]);
   ProcessActionList updatedActionList = previousActionList;
@@ -548,9 +548,9 @@ ProcessTransitionContainer getProcessTransitionContainerForAssignment(str proces
       false,
       AssignmentTransitionLabelInfo(
         processName,
-        variableName,
-        exchangeValueDeclaration,
-        assignmentOperator
+        processConstruct.variableName,
+        processConstruct.exchangeValue,
+        processConstruct.assignmentOperator
       ));
 
   return  ProcessTransitionContainer(updatedActionList, transitionInfo);

@@ -180,8 +180,8 @@ set[TransitionContainer] getStateProcessInteractions(AChoreographyConstruct chor
       return transitionContainerForInteraction(choreographyConstruct, currentState, variableAssignments);
     case AVariableAssignment(str _, str _, AExchangeValueDeclaration _, AAssignmentOperator _):
       return transitionContainerForAssignment(choreographyConstruct, currentState, variableAssignments);
-    case AIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct):
-      return transitionContainerForIfStatement(choreographyConstruct, expression, thenConstruct, elseConstruct, currentState, variableAssignments);
+    case AIfStatement(AExpression _, AChoreographyConstruct _, AChoreographyConstruct _):
+      return transitionContainerForIfStatement(choreographyConstruct, currentState, variableAssignments);
     case AWhileStatement(AExpression _, AChoreographyConstruct _):
       return transitionContainerForWhileStatement(choreographyConstruct, currentState, variableAssignments, partOfComposition, originalConstruct);
     case AEmptyChoreographyConstruct():
@@ -318,17 +318,17 @@ set[TransitionContainer] transitionContainerForWhileStatement(AChoreographyConst
 // INPUT  : @currentState the current state number
 // INPUT  : @variableAssignments the current variableAssignments
 // OUTPUT : The set of containers based on the if-statement
-set[TransitionContainer] transitionContainerForIfStatement(AChoreographyConstruct ifConstruct, AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
+set[TransitionContainer] transitionContainerForIfStatement(AChoreographyConstruct ifConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
 {
-  bool evaluateThen = evaluateExpression(expression, variableAssignments);
+  bool evaluateThen = evaluateExpression(ifConstruct.expression, variableAssignments);
   AChoreographyConstruct remainingConstruct = AEmptyChoreographyConstruct();
   if(evaluateThen)
   {
-    remainingConstruct = thenConstruct;
+    remainingConstruct = ifConstruct.thenConstruct;
   }
   else
   {
-    remainingConstruct = elseConstruct;
+    remainingConstruct = ifConstruct.elseConstruct;
   }
 
   return {TransitionContainer(ifConstruct, 
