@@ -28,36 +28,50 @@ import Set;
 
 void processChoreography(str choreographyFileName)
 {
-  //  Parsing choreography file to a AST
-  start[ConcreteChoreography] choreo = parse(#start[ConcreteChoreography], |file:///<choreographyFileName>|);
+  // (Action A) Parsing choreography file to a AST
+  start[ConcreteChoreography] choreo = parseChoreographyFile(choreographyFileName);
   AChoreography abstractChoreography = parseChoreographyToAST(choreo.top);
   
   // Checking well-formedness
-  bool isWellFormed = classifyChoreography(choreo.top.content.choreographyConstruct, abstractChoreography);
-  if(!isWellFormed)
-  {
-    throw "the choreography is not well-formed!";
+  if (!isChoreographyWellFormed(choreo.top.content.choreographyConstruct, abstractChoreography)) {
+      throw "The choreography is not well-formed!";
   }
 
-  // Get the containers for the process interactions 
+  // (Action B) Convert to ASM
   AbstractStateMachine machine  = convertChoreoASTToASM(abstractChoreography.name, abstractChoreography.choreographyConstruct);
-  bool isDeadockFree            = isAbstractStateMachineDeadlockFree(machine, "test");
 
-  // Parsing the process files based on the choreography AST
+  // (Action C) Check deadlock-freedom
+  bool isDeadockFreeChoreo      = isAbstractStateMachineDeadlockFree(machine, "test");
+
+  // (Action D) Parse process files based on choreography AST
   list[loc] processFiles = projectChoreographyToProcessSpecifications(choreo.top.content.choreographyConstruct);
-  list[AChoreographyProcess] aprocesses = [];
-  for(loc processLocation <- processFiles)
-  {
-    start[ChoreographyProcess] choreoProcess = parse(#start[ChoreographyProcess], processLocation);
-    aprocesses += parseChoreographyProcess(choreoProcess.top);
-  }
+  list[AChoreographyProcess] abstractProcesses = parseProcessFiles(processFiles);
 
-  // Get the process containers for the process files
-  AbstractStateMachine processMachine  = convertChoreoProcessASTsToASM(abstractChoreography.name, aprocesses);
-  bool isDeadockFree2                         = isAbstractStateMachineDeadlockFree(processMachine, "processTest");
+  // (Action E) Convert to ASM
+  AbstractStateMachine processMachine  = convertChoreoProcessASTsToASM(abstractChoreography.name, abstractProcesses);
 
-  // Check if both of the files are equivalent;
-  bool res = areChoreographyMachineAndProcessMachineEquivalent("test","processTest");
+  // Check deadlock-freedom
+  bool isDeadockFreeProcess = isAbstractStateMachineDeadlockFree(processMachine, "processTest");
+
+  // (Action F) Check if machines are equivalent
+  bool areMachinesEquivalent = areChoreographyMachineAndProcessMachineEquivalent("test","processTest");
+}
+
+list[AChoreographyProcess] parseProcessFiles(list[loc] processFiles) {
+    list[AChoreographyProcess] processes = [];
+    for (loc processLocation <- processFiles) {
+        ChoreographyProcess choreoProcess = parse(#start[ChoreographyProcess], processLocation).top;
+        processes += parseChoreographyProcess(choreoProcess);
+    }
+    return processes;
+}
+
+bool isChoreographyWellFormed(ChoreographyConstruct concreteConstruct, AChoreography abstractChoreography) {
+    return classifyChoreography(concreteConstruct, abstractChoreography);
+}
+
+start[ConcreteChoreography] parseChoreographyFile(str fileName) {
+    return parse(#start[ConcreteChoreography], |file:///<fileName>|);
 }
 
 bool isAbstractStateMachineDeadlockFree(AbstractStateMachine abstractStateMachine, str fileName)
