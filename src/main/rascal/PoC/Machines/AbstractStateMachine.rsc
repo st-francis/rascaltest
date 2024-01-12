@@ -1,7 +1,6 @@
 module PoC::Machines::AbstractStateMachine
 
 import List;
-import IO;
 import Set;
 
 data State = State(str nr);

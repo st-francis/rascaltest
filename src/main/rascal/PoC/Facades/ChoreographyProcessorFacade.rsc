@@ -21,10 +21,6 @@ import PoC::Projectors::ChoreographyProjector;
 import PoC::Classifiers::ChoreographyClassifier; 
 
 import ParseTree;
-import IO;
-import List;
-import Set;
-
 
 void processChoreography(str choreographyFileName)
 {

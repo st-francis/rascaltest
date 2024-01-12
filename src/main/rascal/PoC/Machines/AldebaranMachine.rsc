@@ -3,7 +3,6 @@ module PoC::Machines::AldebaranMachine
 import PoC::Machines::AbstractStateMachine;
 import List;
 import Set;
-import IO;
 import String;
 
 data AldebaranMachine = AldebaranMachine(str initalState, int nuOfStates, set[TransitionInfo] transitions);
