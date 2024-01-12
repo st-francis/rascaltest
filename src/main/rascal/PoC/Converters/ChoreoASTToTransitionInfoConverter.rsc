@@ -145,7 +145,7 @@ set[TransitionContainer] getTauContainersForContainers(set[TransitionContainer] 
               AEmptyExchangeValueDeclaration(), 
               AEmptyProcess()),
               AEmptyChoreographyConstruct()
-              , ())};
+              , (), true)};
     }
   }
 
@@ -483,8 +483,10 @@ AChoreographyConstruct tryGetFirstChoreographyConstruct(set[TransitionContainer]
 // INPUT  : @stateFrom - state number from where the tau transition is departing
 // INPUT  : @stateTo  - state number where the tau transition is going to
 // OUTPUT : the tau container 
-TransitionContainer getTauContainer(int stateFrom, int stateTo, AChoreographyConstruct concerningConstruct, AChoreographyConstruct remainingConstruct, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
+TransitionContainer getTauContainer(int stateFrom, int stateTo, AChoreographyConstruct concerningConstruct, AChoreographyConstruct remainingConstruct, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool isFinal)
 {
+  Label tauLabel = isFinal ? getFinalTauLabel() : getTauLabel();
+
   return TransitionContainer(
             concerningConstruct, 
             TransitionContainerExtraInfo(
@@ -492,7 +494,7 @@ TransitionContainer getTauContainer(int stateFrom, int stateTo, AChoreographyCon
               TransitionInfo(
                 stateFrom, 
                 stateTo, 
-                getTauLabel(),
+                tauLabel,
                 TauTransition()
               ),
               variableAssignments

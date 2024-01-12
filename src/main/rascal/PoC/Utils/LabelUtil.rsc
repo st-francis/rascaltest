@@ -12,6 +12,12 @@ Label getTauLabel()
     return Label("T", []);
 }
 
+Label getFinalTauLabel()
+{
+    return Label("FinalT", []);
+}
+
+
 Label getAssignmentLabel(str processName, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator)
 {
     str assignmentOperatorLabel = "is";

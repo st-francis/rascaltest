@@ -23,19 +23,24 @@ bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fi
   CreateLTSFileForLPS("<fileName>.lps", "<fileName>.lts");
   
   bool isDeadlockFree = isLTSDeadlockFree(fileName); 
+  if(isDeadlockFree)
+  {
+    checkFinalTau(fileName);
+  }
   return isDeadlockFree;
 }
 
 void cleanTraceFiles(str fileName)
 {
   remove(|file:///<defaultFileLocation><fileName>.lps_dlk_0.trc|);
-  remove(|file:///<defaultFileLocation><fileName>.lps_divergence_0.trc|);
-  remove(|file:///<defaultFileLocation><fileName>.lps_divergence_loop0.trc|);
+  remove(|file:///<defaultFileLocation><fileName>.lps_dlk_0.txt|);
+  remove(|file:///<defaultFileLocation><fileName>.lps_act_0_FinalT.trc|);
+  remove(|file:///<defaultFileLocation><fileName>.lps_act_0_FinalT.txt|);
 }
 
-void checkDivergence(str fileName)
+void checkFinalTau(str fileName)
 {
-  if(!exists(|file:///<defaultFileLocation><fileName>.lps_divergence_0.trc|))
+  if(!exists(|file:///<defaultFileLocation><fileName>.lps_act_0_FinalT.trc|))
   {
     println("Livelock has occured!");
   }
@@ -60,7 +65,7 @@ bool isLTSDeadlockFree(str fileName)
 bool areChoreographyMachineAndProcessMachineEquivalent(str choreoMachineFileName, str processMachineFileName)
 {
   println("<choreoMachineFileName> <processMachineFileName>");
-  list[str] commArgs = ["--equivalence=weak-trace", "--tau=T", "<defaultFileLocation><choreoMachineFileName>.aut", "<defaultFileLocation><processMachineFileName>.aut"];
+  list[str] commArgs = ["--equivalence=weak-trace", "--tau=T,FinalT", "<defaultFileLocation><choreoMachineFileName>.aut", "<defaultFileLocation><processMachineFileName>.aut"];
   str err = execute("ltscompare", commArgs);  
   
   println("result equiv. check: <err>");
@@ -107,7 +112,7 @@ void CreateLTSFileForLPS(str inputLPSFileName, str outputLTSFileName)
 {
   println("Creating LTS files for LPS!");
   remove(|file:///<defaultFileLocation><outputLTSFileName>|);
-  commArgs = ["--deadlock", "--trace", "--tau=T","--verbose","<defaultFileLocation><inputLPSFileName>", "<defaultFileLocation><outputLTSFileName>"];
+  commArgs = ["--deadlock", "--action=FinalT","--trace","--verbose","<defaultFileLocation><inputLPSFileName>", "<defaultFileLocation><outputLTSFileName>"];
   println("Executing LPS2LTS!");
   try execute("lps2lts", commArgs);
   catch: println(); 

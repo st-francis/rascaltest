@@ -163,7 +163,7 @@ void addFinalTauTransitions()
     bool isTerminating = isTerminatingContainer(container.actionList);
     if(isTerminating)
     {
-      containers += getTauContainer(ProcessActionList((), ()), container.transitionInfo.nextStateNo, container.transitionInfo.nextStateNo);
+      containers += getTauContainer(ProcessActionList((), ()), container.transitionInfo.nextStateNo, container.transitionInfo.nextStateNo, true);
     }
   }
 }
@@ -533,7 +533,7 @@ ProcessTransitionContainer getContainerForTauConstruct(str processName, ProcessA
   newActionList = previousActionList;
   newActionList.processInfo[processName] = getNextRequiredProcessConstructs(previousActionList.processInfo[processName]);
 
-  return getTauContainer(newActionList, previousStateNo, getStateCounterForProcesses(EmptyActionList(), false, {}));
+  return getTauContainer(newActionList, previousStateNo, getStateCounterForProcesses(EmptyActionList(), false, {}),false);
 }
 
 ProcessTransitionContainer getProcessTransitionContainerForAssignment(str processName, AProcessConstruct processConstruct, ProcessActionList previousActionList, int prevStateNo)
@@ -645,11 +645,13 @@ list[AProcessConstruct] getNextRequiredProcessConstructs(list[AProcessConstruct]
   }
 }
 
-ProcessTransitionContainer getTauContainer(ProcessActionList actionList, int stateFrom, int stateTo)
+ProcessTransitionContainer getTauContainer(ProcessActionList actionList, int stateFrom, int stateTo, bool isFinal)
 {
+  Label tauLabel = isFinal ? getFinalTauLabel() : getTauLabel();
+
   return ProcessTransitionContainer(
       actionList,
-      TransitionInfo(stateFrom, stateTo, getTauLabel(), TauTransition()));
+      TransitionInfo(stateFrom, stateTo, tauLabel, TauTransition()));
 }
 
 int getStateCounterForProcesses(ProcessActionList newProcessActionList, bool updateStateCounter, set[ProcessTransitionContainer] toBeCheckedContainers)
