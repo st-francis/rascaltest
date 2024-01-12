@@ -1,7 +1,7 @@
 module PoC::Facades::ChoreographyProcessorFacade
 
-import PoC::Converters::ChoreoASTToTransitionInfoConverter;
-import PoC::Converters::ChoreoProcessASTsToTransitionInfoConverter;
+import PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToTransitionInfoConverter;
 
 import PoC::Machines::AbstractStateMachine;
 import PoC::Machines::AldebaranMachine;

@@ -2,7 +2,7 @@ module PoC::Utils::LabelUtil
 
 import PoC::CommonLanguageElements::AssignmentOperator;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
-import PoC::Converters::ChoreoProcessASTsToTransitionInfoConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToTransitionInfoConverter;
 
 import PoC::Machines::AbstractStateMachine;
 

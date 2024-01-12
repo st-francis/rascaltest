@@ -1,6 +1,8 @@
-module PoC::Converters::ChoreoASTToTransitionInfoConverter
+module PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
+
+import PoC::Converters::Choreography::ChoreographyConverterDataTypes;
 
 import PoC::CommonLanguageElements::ExpressionAbstract;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
@@ -27,12 +29,6 @@ int initialStateNo = 0;
 // The collection of TransitionContainers that is maintained during the evaluation
 set[TransitionContainer] transitionContainers = {};
 set[int] processedStateNos = {};
-
-// The TransitionContainer contains the relevant choreography construct and the related extra info 
-data TransitionContainer = TransitionContainer(AChoreographyConstruct construct, TransitionContainerExtraInfo extraInfo);
-
-// The extra info contains the required choreography that is required after the transition and the transitioninfo
-data TransitionContainerExtraInfo = TransitionContainerExtraInfo(AChoreographyConstruct requiredChor, TransitionInfo transitionInfo, map[str, map[str, AExchangeValueDeclaration]] variableAssignments);
 
 // Main function to evaluate an choreographyConstruct and convert in to a set of TransitionInfo
 // INPUT  : @choreographyConstruct - the construct that represent the parsed choreography    

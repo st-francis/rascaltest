@@ -1,24 +1,28 @@
-module PoC::Converters::ChoreoProcessASTsToTransitionInfoConverter
+module PoC::Converters::Process::ChoreoProcessASTsToTransitionInfoConverter
+
+import PoC::Utils::ActionListUtil;
+import PoC::Utils::LabelUtil;
+
+import PoC::Converters::Process::ChoreoProcessDataTypes;
 
 import PoC::ChoreoProcessLanguage::ChoreoProcessAbstract;
+
 import PoC::ChoreoLanguage::ChoreoAbstract;
-import PoC::Converters::ChoreoASTToTransitionInfoConverter;
+
+import PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter;
+
 import PoC::CommonLanguageElements::ExpressionAbstract;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
-import PoC::Evaluators::ExpressionASTEvaluator;
-import PoC::Machines::AbstractStateMachine;
 
-import PoC::Utils::ProcessUtil;
-import PoC::Utils::LabelUtil;
+import PoC::Evaluators::ExpressionASTEvaluator;
+
+import PoC::Machines::AbstractStateMachine;
 
 import Set;
 import List;
 import String;
 import IO;
-
-data ProcessTransitionContainer   = ProcessTransitionContainer(ProcessActionList actionList, TransitionInfo transitionInfo) | EmptyProcessTransitionContainer();
-data ProcessActionList  = ProcessActionList(map[str processName, list[AProcessConstruct] requiredProcessConstructs] processInfo, map[str, map[str, AExchangeValueDeclaration]] varAssignments) | EmptyActionList();
 
 int initialStateNo = 0;
 int stateCounter;

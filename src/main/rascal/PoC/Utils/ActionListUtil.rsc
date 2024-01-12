@@ -1,8 +1,7 @@
-module PoC::Utils::ProcessUtil
+module PoC::Utils::ActionListUtil
 
-import PoC::ChoreoLanguage::ChoreoConcrete;
 
-import PoC::Converters::ChoreoProcessASTsToTransitionInfoConverter;
+import PoC::Converters::Process::ChoreoProcessDataTypes;
 
 import List;
 
