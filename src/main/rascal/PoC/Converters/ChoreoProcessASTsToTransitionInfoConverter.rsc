@@ -7,6 +7,9 @@ import PoC::CommonLanguageElements::ExpressionAbstract;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
 import PoC::Evaluators::ExpressionASTEvaluator;
+import PoC::Machines::AbstractStateMachine;
+
+import PoC::Utils::LabelUtil;
 
 import Set;
 import List;
@@ -20,13 +23,14 @@ int initialStateNo = 0;
 int stateCounter;
 set[ProcessTransitionContainer] containers = {};
 
-set[TransitionInfo] convertChoreoProcessASTsToTransitionInfo(list[AChoreographyProcess] processes)
+AbstractStateMachine convertChoreoProcessASTsToASM(str name, list[AChoreographyProcess] processes)
 {
   containers = {};
   ProcessActionList initialActionList = ProcessActionList((process.name : process.processConstructs | AChoreographyProcess process <- processes), ());
   stateCounter = initialStateNo;
   BuildProcessTransitionContainersForActionList(initialActionList);
-  return {container.transitionInfo | ProcessTransitionContainer container <- containers};
+  set[TransitionInfo] transitionInfo =  {container.transitionInfo | ProcessTransitionContainer container <- containers};
+  return AbstractStateMachine(name, "0", transitionInfo);
 }
 
 void BuildProcessTransitionContainersForActionList(ProcessActionList initialActionList)
@@ -90,27 +94,27 @@ bool containerWithMatchingInteractionInContainerSet(set[ProcessTransitionContain
 
 bool containerMatchesInteraction(ProcessTransitionContainer container1, ProcessTransitionContainer container2) {
     
-    if(container1.transitionInfo.transitionLabelInfo is AssignmentTransitionLabelInfo 
-    || container2.transitionInfo.transitionLabelInfo is AssignmentTransitionLabelInfo
-    || container1.transitionInfo.transitionLabelInfo is IfThenElseDecisionLabelInfo
-    || container2.transitionInfo.transitionLabelInfo is IfThenElseDecisionLabelInfo
-    || container1.transitionInfo.transitionLabelInfo is WhileDecisionLabelInfo
-    || container2.transitionInfo.transitionLabelInfo is WhileDecisionLabelInfo)
+    if(container1.transitionInfo.transitionType is AssignmentTransition 
+    || container2.transitionInfo.transitionType is AssignmentTransition
+    || container1.transitionInfo.transitionType is IfEvaluationTransition
+    || container2.transitionInfo.transitionType is IfEvaluationTransition
+    || container1.transitionInfo.transitionType is WhileEvaluationTransition
+    || container2.transitionInfo.transitionType is WhileEvaluationTransition)
     {
       return false;
     }
 
-    if(container1.transitionInfo.transitionLabelInfo is IfThenElseDecisionLabelInfo &&
-      container2.transitionInfo.transitionLabelInfo is IfThenElseDecisionLabelInfo &&
-      !container1.transitionInfo.isTau &&
-      !container2.transitionInfo.isTau)
+    if(container1.transitionInfo.transitionType is IfEvaluationTransition &&
+      container2.transitionInfo.transitionType is IfEvaluationTransition &&
+      !container1.transitionInfo.transitionType is TauTransition &&
+      !container2.transitionInfo.transitionType is TauTransition)
       {
         return true;
       }
 
-    return container1.transitionInfo.transitionLabelInfo.sender == container2.transitionInfo.transitionLabelInfo.sender &&
-        container1.transitionInfo.transitionLabelInfo.receiver == container2.transitionInfo.transitionLabelInfo.receiver &&
-        !container2.transitionInfo.isTau;
+    return container1.transitionInfo.transitionType.sender == container2.transitionInfo.transitionType.sender &&
+        container1.transitionInfo.transitionType.receiver == container2.transitionInfo.transitionType.receiver &&
+        !(container2.transitionInfo.transitionType is TauTransition);
 }
 
 set[ProcessTransitionContainer] addContainers(set[ProcessTransitionContainer] newContainers)
@@ -124,10 +128,9 @@ set[ProcessTransitionContainer] addContainers(set[ProcessTransitionContainer] ne
         TransitionInfo(
           cont.transitionInfo.prevStateNo,
           getStateCounterForProcesses(cont.actionList, true, toBeCheckedContainers),
-          cont.transitionInfo.isTau,
-          cont.transitionInfo.transitionLabelInfo
+          cont.transitionInfo.transitionLabel,
+          cont.transitionInfo.transitionType
         )
-      
     );
       addedContainers += newContainer;
   }
@@ -334,8 +337,8 @@ ProcessTransitionContainer getProcessTransitionContainerForWhileStatement(Proces
   TransitionInfo transitionInfo = TransitionInfo(
                                       prevStateNo,
                                       getStateCounterForProcesses(EmptyActionList(),false, {}),
-                                      false,
-                                      WhileDecisionLabelInfo(getFirstFrom(evaluationResults))
+                                      getWhileStatementEvaluationLabel(getFirstFrom(evaluationResults)),
+                                      WhileEvaluationTransition()
                                     );
 
 
@@ -489,8 +492,8 @@ ProcessTransitionContainer getProcessTransitionContainerForIfStatement(ProcessAc
   TransitionInfo transitionInfo = TransitionInfo(
                                       prevStateNo,
                                       getStateCounterForProcesses(EmptyActionList(),false, {}),
-                                      false,
-                                      IfThenElseDecisionLabelInfo(getFirstFrom(evaluationResults))
+                                      getIfStatementEvaluationLabel(getFirstFrom(evaluationResults)),
+                                      IfEvaluationTransition()
                                     );
   
   return ProcessTransitionContainer(previousActionList, transitionInfo);
@@ -545,13 +548,14 @@ ProcessTransitionContainer getProcessTransitionContainerForAssignment(str proces
   TransitionInfo transitionInfo = TransitionInfo(
       prevStateNo,
       getStateCounterForProcesses(EmptyActionList(), false, {}),
-      false,
-      AssignmentTransitionLabelInfo(
+      getAssignmentLabel(
         processName,
         processConstruct.variableName,
         processConstruct.exchangeValue,
         processConstruct.assignmentOperator
-      ));
+      ),
+      AssignmentTransition()
+      );
 
   return  ProcessTransitionContainer(updatedActionList, transitionInfo);
 }
@@ -596,14 +600,14 @@ ProcessTransitionContainer getProcessTransitionContainerForProcessInteraction(st
   TransitionInfo transitionInfo = TransitionInfo(
                                       prevStateNo,
                                       getStateCounterForProcesses(EmptyActionList(),false, {}),
-                                      false,
-                                      TransitionLabelInfo(
+                                      getInteractionLabel(
                                         sendingProcessName,
                                         receivingProcessName,
                                         varFrom,
                                         varTo,
                                         exchangeValue
-                                      )
+                                      ),
+                                      InteractionTransition(sendingProcessName, receivingProcessName)
                                     );
   
   return ProcessTransitionContainer(updatedActionList, transitionInfo);
@@ -645,8 +649,7 @@ ProcessTransitionContainer getTauContainer(ProcessActionList actionList, int sta
 {
   return ProcessTransitionContainer(
       actionList,
-      TransitionInfo(stateFrom, stateTo, true, TransitionLabelInfo("","","","",AEmptyExchangeValueDeclaration()))
-    );
+      TransitionInfo(stateFrom, stateTo, getTauLabel(), TauTransition()));
 }
 
 int getStateCounterForProcesses(ProcessActionList newProcessActionList, bool updateStateCounter, set[ProcessTransitionContainer] toBeCheckedContainers)

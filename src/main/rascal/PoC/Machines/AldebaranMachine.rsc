@@ -6,15 +6,15 @@ import Set;
 import IO;
 import String;
 
-data AldebaranMachine = AldebaranMachine(str initalState, int nuOfStates, list[Transition] transitions);
+data AldebaranMachine = AldebaranMachine(str initalState, int nuOfStates, set[TransitionInfo] transitions);
 
 str GetMachineAsFileString(AldebaranMachine aldebaranMachine)
 {
   str content = "des (<aldebaranMachine.initalState>, <size(aldebaranMachine.transitions)>, <aldebaranMachine.nuOfStates>)\n";
-  for(Transition transition <- aldebaranMachine.transitions)
+  for(TransitionInfo transitionInfo <- aldebaranMachine.transitions)
   {   
-      str argumentStr = getArgumentsStr(transition.transitionLabel.arguments);
-      content += "(<transition.startingState.nr>,\"<transition.transitionLabel.description><argumentStr>\",<transition.finalState.nr>)\n";
+      str argumentStr = getArgumentsStr(transitionInfo.transitionLabel.arguments);
+      content += "(<transitionInfo.prevStateNo>,\"<transitionInfo.transitionLabel.description><argumentStr>\",<transitionInfo.nextStateNo>)\n";
   }
   
   return content;

@@ -6,23 +6,29 @@ import Set;
 
 data State = State(str nr);
 data Label = Label(str description, list[tuple[str, str]] arguments);
-data Transition = Transition(State startingState, Label transitionLabel, State finalState);
-data AbstractStateMachine = AbstractStateMachine(str machineName, str initialStateNr, list[Transition] stateTransitions);
+data TransitionInfo = TransitionInfo(int prevStateNo, int nextStateNo, Label transitionLabel, TransitionType transitionType);
+data AbstractStateMachine = AbstractStateMachine(str machineName, str initialStateNr, set[TransitionInfo] stateTransitions);
+data TransitionType = AssignmentTransition()
+    | InteractionTransition(str sender, str receiver)
+    | IfEvaluationTransition()
+    | WhileEvaluationTransition()
+    | TauTransition()
+    ;
 
 set[str] getLabelActions(AbstractStateMachine stateMachine) {
-    return {getmCRL2ActionLabel(transition) | Transition transition <- stateMachine.stateTransitions};
+    return {getmCRL2ActionLabel(transition) | TransitionInfo transition <- stateMachine.stateTransitions};
 }
 
-int getUniqueStates(list[Transition] stateTransitions){
-    return size({transition.startingState, transition.finalState| Transition transition <- stateTransitions});
+int getUniqueStates(set[TransitionInfo] stateTransitions){
+    return size({transitionInfo.prevStateNo, transitionInfo.nextStateNo| TransitionInfo transitionInfo <- stateTransitions});
 }
 
-str getmCRL2ActionLabel(Transition transition)
+str getmCRL2ActionLabel(TransitionInfo transitionInfo)
 {
     str label = "";
-    label += transition.transitionLabel.description;
+    label += transitionInfo.transitionLabel.description;
         
-    str argumentStr = getArgumentsStr(transition.transitionLabel.arguments);
+    str argumentStr = getArgumentsStr(transitionInfo.transitionLabel.arguments);
 
     return "<label><argumentStr>";
 }

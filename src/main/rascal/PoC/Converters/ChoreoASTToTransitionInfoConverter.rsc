@@ -7,7 +7,11 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::ProcessAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
 
+import PoC::Machines::AbstractStateMachine;
+
 import PoC::Evaluators::ExpressionASTEvaluator;
+
+import PoC::Utils::LabelUtil;
 
 import List;
 import Set;
@@ -28,38 +32,20 @@ data TransitionContainer = TransitionContainer(AChoreographyConstruct construct,
 // The extra info contains the required choreography that is required after the transition and the transitioninfo
 data TransitionContainerExtraInfo = TransitionContainerExtraInfo(AChoreographyConstruct requiredChor, TransitionInfo transitionInfo, map[str, map[str, AExchangeValueDeclaration]] variableAssignments);
 
-// The transitionInfo contains all the information that is required for each state transition
-data TransitionInfo = TransitionInfo(int prevStateNo, int nextStateNo, bool isTau, TransitionLabelInfo transitionLabelInfo);
-
-// The label info is used to store the information relevant for the label on the transition
-data TransitionLabelInfo = TransitionLabelInfo(str sender, str receiver, str varFrom, str varTo, AExchangeValueDeclaration exchangeValueDeclaration) 
-                           | AssignmentTransitionLabelInfo(str currentProcess, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator)
-                           | IfThenElseDecisionLabelInfo(bool isThen)
-                           | WhileDecisionLabelInfo(bool reentering)
-                           | EmptyTransitionLabelInfo();
-
-
 // Main function to evaluate an choreographyConstruct and convert in to a set of TransitionInfo
 // INPUT  : @choreographyConstruct - the construct that represent the parsed choreography    
 // OUTPUT : The set of transitioninfos that are derived from the choreographyConstruct
-set[TransitionInfo] convertChoreoASTToTransitionInfo(AChoreographyConstruct choreographyConstruct)
+AbstractStateMachine convertChoreoASTToASM(str choreographyName, AChoreographyConstruct choreographyConstruct)
 {
   stateCounter = initialStateNo;
   transitionContainers = {};
   
   if(isTerminatingChorConstruct(choreographyConstruct))
   {
-    return {getTauContainer(stateCounter,
-              0, 
-              AProcessInteraction(
-                AEmptyProcess(),
-                AEmptyExchangeValueDeclaration(), 
-                AEmptyProcess()),
-                AEmptyChoreographyConstruct(), 
-                ()).extraInfo.transitionInfo};
+    return AbstractStateMachine(choreographyName, "0", {});
   }
-
-  return buildTransitionInfo(choreographyConstruct);
+  set[TransitionInfo] transitionInfo = buildTransitionInfo(choreographyConstruct);
+  return AbstractStateMachine(choreographyName, "0", transitionInfo);
 }
 
 // Function that retrieves the set of transitionInfos in a breadth-first manner
@@ -116,8 +102,8 @@ set[TransitionContainer] processRequiredInteractionsWithValidStateCounter(set[Tr
                                                                                     TransitionInfo(
                                                                                       interaction.extraInfo.transitionInfo.prevStateNo, 
                                                                                       getStateCounter(interaction.extraInfo.requiredChor, true, interaction.extraInfo.variableAssignments),
-                                                                                      interaction.extraInfo.transitionInfo.isTau,
-                                                                                      interaction.extraInfo.transitionInfo.transitionLabelInfo)
+                                                                                      interaction.extraInfo.transitionInfo.transitionLabel,
+                                                                                      interaction.extraInfo.transitionInfo.transitionType)
                                                                                       , interaction.extraInfo.variableAssignments)) 
                                 | TransitionContainer interaction <- transitionContainers};
 }
@@ -133,8 +119,8 @@ set[TransitionContainer] getInitialProcessInteractions(AChoreographyConstruct ch
                     TransitionInfo(
                       interaction.extraInfo.transitionInfo.prevStateNo,
                       getStateCounter(interaction.extraInfo.requiredChor, true, interaction.extraInfo.variableAssignments),
-                      interaction.extraInfo.transitionInfo.isTau,
-                      interaction.extraInfo.transitionInfo.transitionLabelInfo
+                      interaction.extraInfo.transitionInfo.transitionLabel,
+                      interaction.extraInfo.transitionInfo.transitionType
                     ),
                     interaction.extraInfo.variableAssignments
                 )
@@ -303,10 +289,8 @@ set[TransitionContainer] transitionContainerForWhileStatement(AChoreographyConst
                                                               TransitionInfo(
                                                                 currentState, 
                                                                 getStateCounter(AEmptyChoreographyConstruct(), false, variableAssignments),
-                                                                false,
-                                                                WhileDecisionLabelInfo(
-                                                                  enterWhile
-                                                                )),
+                                                                getWhileStatementEvaluationLabel(enterWhile),
+                                                                WhileEvaluationTransition()),
                                                               variableAssignments))};
 }
 
@@ -336,10 +320,8 @@ set[TransitionContainer] transitionContainerForIfStatement(AChoreographyConstruc
                                                                   TransitionInfo(
                                                                     currentState, 
                                                                     getStateCounter(AEmptyChoreographyConstruct(), false, variableAssignments),
-                                                                    false,
-                                                                    IfThenElseDecisionLabelInfo(
-                                                                      evaluateThen
-                                                                    )),
+                                                                    getIfStatementEvaluationLabel(evaluateThen),
+                                                                    IfEvaluationTransition()),
                                                                   variableAssignments))};
 }
 
@@ -393,13 +375,13 @@ set[TransitionContainer] transitionContainerForAssignment(AChoreographyConstruct
                                                                                TransitionInfo(
                                                                                 currentState, 
                                                                                 getStateCounter(AEmptyChoreographyConstruct(), false, newAssignments),
-                                                                                false,
-                                                                                AssignmentTransitionLabelInfo(
+                                                                                getAssignmentLabel(
                                                                                   assignment.processName,
                                                                                   assignment.variableName,
                                                                                   assignment.exchangeValueDeclaration,
                                                                                   assignment.assignmentOperator
-                                                                                )),
+                                                                                ),
+                                                                                AssignmentTransition()),
                                                                                 newAssignments))};
 }
 
@@ -415,14 +397,14 @@ set[TransitionContainer] transitionContainerForInteraction(AChoreographyConstruc
                                                                               TransitionInfo(
                                                                               currentState, 
                                                                               getStateCounter(AEmptyChoreographyConstruct(), false, newAssignments),
-                                                                              false,
-                                                                              TransitionLabelInfo(
+                                                                              getInteractionLabel(
                                                                                 interaction.sendingProcess.name,
                                                                                 interaction.receivingProcess.name,
                                                                                 interaction.sendingProcess.variableName,
                                                                                 interaction.receivingProcess.variableName,
                                                                                 interaction.exchangeValueDeclaration
-                                                                              )),
+                                                                              ),
+                                                                              InteractionTransition(interaction.sendingProcess.name, interaction.receivingProcess.name)),
                                                                               newAssignments))};
 }
 
@@ -454,8 +436,8 @@ set[TransitionContainer] transitionContainerForComposition(AChoreographyConstruc
                                               TransitionInfo(
                                                 currentState, 
                                                 getStateCounter(AEmptyChoreographyConstruct(), false, interaction.extraInfo.variableAssignments), 
-                                                interaction.extraInfo.transitionInfo.isTau,
-                                                interaction.extraInfo.transitionInfo.transitionLabelInfo
+                                                interaction.extraInfo.transitionInfo.transitionLabel,
+                                                interaction.extraInfo.transitionInfo.transitionType
                                               ),
                                               interaction.extraInfo.variableAssignments
                                             ))
@@ -470,8 +452,8 @@ set[TransitionContainer] transitionContainerForComposition(AChoreographyConstruc
                                               TransitionInfo(
                                                 currentState, 
                                                 getStateCounter(AEmptyChoreographyConstruct(), false, interaction.extraInfo.variableAssignments), 
-                                                interaction.extraInfo.transitionInfo.isTau,
-                                                interaction.extraInfo.transitionInfo.transitionLabelInfo
+                                                interaction.extraInfo.transitionInfo.transitionLabel,
+                                                interaction.extraInfo.transitionInfo.transitionType
                                                 ),
                                                 interaction.extraInfo.variableAssignments)
                                             ) 
@@ -510,8 +492,8 @@ TransitionContainer getTauContainer(int stateFrom, int stateTo, AChoreographyCon
               TransitionInfo(
                 stateFrom, 
                 stateTo, 
-                true,
-                EmptyTransitionLabelInfo()
+                getTauLabel(),
+                TauTransition()
               ),
               variableAssignments
             )

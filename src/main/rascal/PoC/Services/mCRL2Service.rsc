@@ -7,7 +7,7 @@ import PoC::Machines::AldebaranMachine;
 import Boolean;
 import String;
 
-str defaultFileLocation = "C:/Users/marco/RascalTest/rascaltest/src/main/";
+str defaultFileLocation = "M:/RascalTestNew/rascaltest/src/main/";
 str defaultmCRL2Location = "M:/Programs/mCRL2/bin/";
 
 bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fileName)
@@ -23,10 +23,6 @@ bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fi
   CreateLTSFileForLPS("<fileName>.lps", "<fileName>.lts");
   
   bool isDeadlockFree = isLTSDeadlockFree(fileName); 
-  if(isDeadlockFree)
-  {
-    checkDivergence(fileName);
-  }
   return isDeadlockFree;
 }
 
@@ -110,11 +106,11 @@ void CreateLPSFileForAldabaranLTSFiles(str inputAldabaranFilename, str inputData
 void CreateLTSFileForLPS(str inputLPSFileName, str outputLTSFileName)
 {
   println("Creating LTS files for LPS!");
-
   remove(|file:///<defaultFileLocation><outputLTSFileName>|);
-
-  commArgs = ["--deadlock", "--divergence", "--trace", "--tau=T","--verbose","<defaultFileLocation><inputLPSFileName>", "<defaultFileLocation><outputLTSFileName>"];
-  execute("lps2lts", commArgs);
+  commArgs = ["--deadlock", "--trace", "--tau=T","--verbose","<defaultFileLocation><inputLPSFileName>", "<defaultFileLocation><outputLTSFileName>"];
+  println("Executing LPS2LTS!");
+  try execute("lps2lts", commArgs);
+  catch: println(); 
 }
 
 void CreateReadableTraceFile(str inputTraceFileName, str outputTraceFileName)

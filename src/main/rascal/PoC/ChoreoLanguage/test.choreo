@@ -3,15 +3,7 @@ choreo testChoreo
   Alice.x1 := 11:Int;
   Alice (11:Int) -> Bob.y1;
 
-  if(Alice.x1 == 11 && Bob.y1 == 11)
-  {
-    Alice (11:Int) -> Bob.y1
-  }else
-  {
-    Bob (11:Int) -> Alice.y1
-  };
-
-  while(Alice.x1 != 12 && Bob.y1 != 12)
+  while(Alice.x1 != 13 && Bob.y1 != 13)
   {
     Alice.x1 := 12:Int;
     Alice (12:Int) -> Bob.y1

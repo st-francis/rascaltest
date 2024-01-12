@@ -2,7 +2,6 @@ module PoC::Main
 
 import PoC::Converters::ChoreoASTToTransitionInfoConverter;
 import PoC::Converters::ChoreoProcessASTsToTransitionInfoConverter;
-import PoC::Converters::TransitionInfoToASMConverter;
 
 import PoC::Machines::AbstractStateMachine;
 import PoC::Machines::AldebaranMachine;
@@ -29,7 +28,7 @@ import Set;
 void main()
 {
   // //  Parsing choreography file to a AST
-  start[ConcreteChoreography] choreo = parse(#start[ConcreteChoreography], |file:///C:/Users/marco/RascalTest/rascaltest/src/main/rascal/PoC/ChoreoLanguage/test.choreo|);
+  start[ConcreteChoreography] choreo = parse(#start[ConcreteChoreography], |file:///M:/RascalTestNew/rascaltest/src/main/rascal/PoC/ChoreoLanguage/test.choreo|);
   AChoreography abstractChoreography = parseChoreographyToAST(choreo.top);
   
   // Checking well-formedness
@@ -40,8 +39,7 @@ void main()
   }
 
   // Get the containers for the process interactions 
-  set[TransitionInfo] transitionInfos = convertChoreoASTToTransitionInfo(abstractChoreography.choreographyConstruct);
-  AbstractStateMachine machine        = convertTransitionInfosToASM(abstractChoreography.name, transitionInfos);
+  AbstractStateMachine machine  = convertChoreoASTToASM(abstractChoreography.name, abstractChoreography.choreographyConstruct);
   bool isDeadockFree                  = isAbstractStateMachineDeadlockFree(machine, "test");
 
   // Parsing the process files based on the choreography AST
@@ -54,8 +52,7 @@ void main()
   }
 
   // Get the process containers for the process files
-  set[TransitionInfo] processTransitionInfos  = convertChoreoProcessASTsToTransitionInfo(aprocesses);
-  AbstractStateMachine processMachine         = convertTransitionInfosToASM(abstractChoreography.name, processTransitionInfos);
+  AbstractStateMachine processMachine  = convertChoreoProcessASTsToASM(abstractChoreography.name, aprocesses);
   bool isDeadockFree2                         = isAbstractStateMachineDeadlockFree(processMachine, "processTest");
 
   // Check if both of the files are equivalent;
