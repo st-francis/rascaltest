@@ -1,7 +1,9 @@
 module PoC::Projectors::ChoreographyProjector
 
 import PoC::ChoreoLanguage::ChoreoConcrete;
-import PoC::Utils::Util;
+
+import PoC::Utils::ChoreographyUtil;
+import PoC::Utils::ExpressionUtil;
 
 import List;
 import Set;

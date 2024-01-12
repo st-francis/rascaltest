@@ -11,7 +11,9 @@ import PoC::Machines::AbstractStateMachine;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
 
+import PoC::Utils::ChoreographyUtil;
 import PoC::Utils::LabelUtil;
+import PoC::Utils::ExpressionUtil;
 
 import List;
 import Set;
@@ -502,7 +504,6 @@ TransitionContainer getTauContainer(int stateFrom, int stateTo, AChoreographyCon
         );
 }
 
-
 // Function that checkes whether two constructs have overlapping process names
 // INPUT  : @construct1 - the first construct
 // INPUT  : @construct2 - the second construct
@@ -515,8 +516,8 @@ bool hasOverlappingProcessNames(AChoreographyConstruct construct1, AChoreography
     return true;
   }
 
-  set[str] construct1Names = getNamesForChoreographyConstruct(construct1);
-  set[str] construct2Names = getNamesForChoreographyConstruct(construct2);
+  set[str] construct1Names = findUniqueProcessNamesForAChoreographyConstruct(construct1);
+  set[str] construct2Names = findUniqueProcessNamesForAChoreographyConstruct(construct2);
 
   for(str name <- construct1Names)
   {
@@ -527,65 +528,6 @@ bool hasOverlappingProcessNames(AChoreographyConstruct construct1, AChoreography
   }
 
   return false;
-}
-
-// Function that returns the names for a given construct
-// INPUT  : @construct - the construct where the names need to be determined for
-// OUTPUT : A set of process names that occur in the construct
-set[str] getNamesForChoreographyConstruct(AChoreographyConstruct construct)
-{
-  switch(construct)
-  {
-    case AIfStatement(AExpression expression, AChoreographyConstruct _, AChoreographyConstruct _):
-      return getExpressionNames(expression);
-    case AWhileStatement(AExpression expression, AChoreographyConstruct _):
-      return getExpressionNames(expression);
-    case AProcessInteraction(AProcess sendingProcess, AExchangeValueDeclaration _, AProcess receivingProcess):
-      return {sendingProcess.name, receivingProcess.name};
-    case AVariableAssignment(str processName, str _, AExchangeValueDeclaration _, AAssignmentOperator _):
-      return {processName};
-    case AEmptyChoreographyConstruct():
-      return {};
-    default: throw "No matching choreography construct found!";
-  }
-}
-
-// Function that evaluates an expression and returns all the process names
-// INPUT  : @expression - the expression that needs evaluation
-// OUTPUT : The names in the expression
-set[str] getExpressionNames(AExpression expression)
-{
-  switch(expression)
-  {
-    case AExpressionConjunction(AExpression expr1, AExpression expr2):
-      return getExpressionNames(expr1) + getExpressionNames(expr2);
-    case AExpressionDisjunction(AExpression expr1, AExpression expr2):
-      return getExpressionNames(expr1) + getExpressionNames(expr2);
-    case AEqualExpression(AExpression val1, AExpression val2):
-      return getExpressionName(val1) + getExpressionName(val2);
-    case ANotEqualExpression(AExpression val1, AExpression val2):
-      return getExpressionName(val1) + getExpressionName(val2);
-  }
-
-  return {};
-}
-
-// Function that returnst the name that may exist in an expression
-// INPUT  : @expression the expression where the value needs to be retrieved from
-// OUTPUT : A set of names that occur in the expression
-set[str] getExpressionName(AExpression expression)
-{
-  switch(expression)
-  {
-    case AIntExpression(int _):
-      return {};
-    case ABoolExpression(bool _):
-      return {};
-    case AProcessVariableDeclarationExpression(AProcess process): 
-      return {process.name};
-  }
-  
-  return {};
 }
 
 // Function that composes two choreography construct to one construct
@@ -604,29 +546,6 @@ AChoreographyConstruct composeChorConstructs(AChoreographyConstruct construct1, 
       AEmptyChoreographyConstruct();
 
   return compositeChorConstruct;
-}
-
-// Function that indicates whether a construct is an terminating one
-// INPUT  : @chorConstruct - the construct that needs to be checked
-// OUTPUT : A flag indicating if the construct is terminating
-bool isTerminatingChorConstruct(AChoreographyConstruct chorConstruct)
-{
-  switch(chorConstruct)
-  {
-    case AProcessInteraction(AProcess _, AExchangeValueDeclaration _, AProcess _):
-      return false;
-    case AChoreographyComposition(AChoreographyConstruct _, AChoreographyConstruct _):
-      return false;
-    case AVariableAssignment(str _, str _, AExchangeValueDeclaration _, AAssignmentOperator _):
-      return false;
-    case AIfStatement(AExpression _, AChoreographyConstruct _, AChoreographyConstruct _):
-      return false;
-    case AWhileStatement(AExpression _, AChoreographyConstruct _):
-      return false; 
-    case AEmptyChoreographyConstruct():
-      return true;
-    default: throw "The chor construct is not recognized!: <chorConstruct>";
-  }
 }
 
 // Function to return a new state counter, which also checks if already existing states have an equal set of remaining constructs

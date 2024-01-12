@@ -2,10 +2,12 @@ module PoC::Utils::LabelUtil
 
 import PoC::CommonLanguageElements::AssignmentOperator;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
+import PoC::Converters::ChoreoProcessASTsToTransitionInfoConverter;
 
 import PoC::Machines::AbstractStateMachine;
 
 import String;
+import List;
 
 Label getTauLabel()
 {

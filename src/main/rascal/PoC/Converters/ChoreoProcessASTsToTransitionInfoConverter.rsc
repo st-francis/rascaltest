@@ -9,6 +9,7 @@ import PoC::CommonLanguageElements::AssignmentOperator;
 import PoC::Evaluators::ExpressionASTEvaluator;
 import PoC::Machines::AbstractStateMachine;
 
+import PoC::Utils::ProcessUtil;
 import PoC::Utils::LabelUtil;
 
 import Set;
@@ -160,7 +161,7 @@ void addFinalTauTransitions()
 {
   for(ProcessTransitionContainer container <- containers)
   {
-    bool isTerminating = isTerminatingContainer(container.actionList);
+    bool isTerminating = isActionListEmpty(container.actionList);
     if(isTerminating)
     {
       containers += getTauContainer(ProcessActionList((), ()), container.transitionInfo.nextStateNo, container.transitionInfo.nextStateNo, true);
@@ -349,7 +350,7 @@ bool equivalentProcessesStateExists(ProcessActionList processActionList, set[Pro
 {
   for(ProcessTransitionContainer container <- toBeCheckedContainers)
   {  
-    bool allRemainingConstructsEqual = areAllRemainingConstructsEqual(container.actionList, processActionList); 
+    bool allRemainingConstructsEqual = areActionListsEqual(container.actionList, processActionList); 
 
     if(allRemainingConstructsEqual)
     {
@@ -396,7 +397,6 @@ bool doesWhileContentMakeAnyDifference(map[str, AProcessConstruct] whileConstruc
     }
   }
 
-  println("hasDifference <hasDifference>");
   return hasDifference;
 }
 
@@ -406,7 +406,6 @@ AProcessConstruct buildProcessComposition(AProcessConstruct abComposition, AProc
   AProcessConstruct constructA  = AEmptyProcessConstruct();
   AProcessConstruct constructB  = AEmptyProcessConstruct();
   AProcessConstruct constructC  = cConstruct;
-
 
   if(!(abComposition.construct1 is AProcessSequentialComposition))
   {
@@ -483,7 +482,6 @@ ProcessTransitionContainer getProcessTransitionContainerForIfStatement(ProcessAc
         nextConstruct = AProcessSequentialComposition(thenElseConstructs[name][1], previousActionList.processInfo[name][0]);
       }
 
-      // AProcessConstruct nextConstruct = size(previousActionList.processInfo[name]) == 0 ? thenElseConstructs[name][1] : AProcessSequentialComposition(thenElseConstructs[name][1], previousActionList.processInfo[name][0]);
       previousActionList.processInfo[name] = [nextConstruct]; 
     }
   }
@@ -567,22 +565,19 @@ ProcessTransitionContainer getProcessTransitionContainerForProcessInteraction(st
       return EmptyProcessTransitionContainer();
   }
 
-  AProcessConstruct sendingConstruct = getProcessConstruct(previousActionList.processInfo[sendingProcessName][0]);
-  AProcessConstruct receivingConstruct = getProcessConstruct(previousActionList.processInfo[receivingProcessName][0]);
+  AProcessConstruct sendingConstruct = getFirsProcessConstructForPossibleComposition(previousActionList.processInfo[sendingProcessName][0]);
+  AProcessConstruct receivingConstruct = getFirsProcessConstructForPossibleComposition(previousActionList.processInfo[receivingProcessName][0]);
 
-  // controle type
   if(!(sendingConstruct is AProcessInteractionOutput) || !(receivingConstruct is AProcessInteractionInput))
   {
     return EmptyProcessTransitionContainer();
   }
   
-  // controle tau construct
   if(sendingConstruct is ATauConstruct || receivingConstruct is ATauConstruct)
   {
     return EmptyProcessTransitionContainer();
   }
 
-  // controle juiste interactie
   if(!(sendingProcessName == receivingConstruct.outputProcessName) || !(receivingProcessName == sendingConstruct.outputProcessName))
   {
     return EmptyProcessTransitionContainer();
@@ -620,7 +615,7 @@ ProcessActionList updateActionListForSenderAndReceiver(ProcessActionList actionL
   return actionList;
 }
 
-AProcessConstruct getProcessConstruct(AProcessConstruct construct)
+AProcessConstruct getFirsProcessConstructForPossibleComposition(AProcessConstruct construct)
 {
   if(construct is AProcessSequentialComposition)
   {
@@ -663,7 +658,7 @@ int getStateCounterForProcesses(ProcessActionList newProcessActionList, bool upd
 
   for(ProcessTransitionContainer container <- toBeCheckedContainers)
   {  
-    bool allRemainingConstructsEqual = areAllRemainingConstructsEqual(container.actionList, newProcessActionList); 
+    bool allRemainingConstructsEqual = areActionListsEqual(container.actionList, newProcessActionList); 
 
     if(allRemainingConstructsEqual)
     {
@@ -673,32 +668,4 @@ int getStateCounterForProcesses(ProcessActionList newProcessActionList, bool upd
   
   stateCounter = stateCounter + 1;
   return stateCounter;
-}
-
-bool areAllRemainingConstructsEqual(ProcessActionList list1, ProcessActionList list2) {
-    
-    if(list1.varAssignments != list2.varAssignments)
-    {
-      return false;
-    }
-
-    for (str processName <- list1.processInfo) {
-        if (list1.processInfo[processName] != list2.processInfo[processName]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool isTerminatingContainer(ProcessActionList actionList)
-{
-  for (str processName <- actionList.processInfo)
-  {
-    if (!isEmpty(actionList.processInfo[processName]))
-    {
-      return false;
-    }
-  }
-
-  return true;
 }

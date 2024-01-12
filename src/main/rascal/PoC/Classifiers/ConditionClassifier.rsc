@@ -1,7 +1,8 @@
 module PoC::Classifiers::ConditionClassifier
 
 import PoC::ChoreoLanguage::ChoreoConcrete;
-import PoC::Utils::Util;
+import PoC::Utils::ChoreographyUtil;
+import PoC::Utils::ExpressionUtil;
 
 import Set;
 import IO;

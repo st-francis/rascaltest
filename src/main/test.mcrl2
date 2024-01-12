@@ -1,5 +1,8 @@
 act
 EXITING;
 Alice_to_Bob_y1: Int;
+Alice_x1_is_12_Int;
+REENTERING;
+THEN;
 FinalT;
 Alice_x1_is_11_Int;
