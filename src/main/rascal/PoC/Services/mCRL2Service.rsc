@@ -7,8 +7,9 @@ import PoC::Machines::AldebaranMachine;
 import Boolean;
 import String;
 
-str defaultFileLocation = "M:/RascalTestNew/rascaltest/src/main/";
-str defaultmCRL2Location = "M:/Programs/mCRL2/bin/";
+str defaultFileLocation = "DEFAULT_FILE_LOCATION";
+str defaultmCRL2BinLocation = "MCRL2_BIN_LOCATION";
+str defaultmCRL2Location = "MCRL2_LOCATION";
 
 bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fileName)
 {
@@ -134,5 +135,5 @@ str GetTraceString(str inputTraceFileName, str fileName)
 
 str execute(str appName, list[str] appArguments)
 {
-  return exec(|file:///<defaultmCRL2Location><appName>|, workingDir=|file:///M:/Programs/mCRL2/bin|, args=appArguments);
+  return exec(|file:///<defaultmCRL2BinLocation><appName>|, workingDir=|file:///<defaultmCRL2Location>|, args=appArguments);
 }

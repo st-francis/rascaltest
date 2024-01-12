@@ -28,7 +28,7 @@ import Set;
 void main()
 {
   // //  Parsing choreography file to a AST
-  start[ConcreteChoreography] choreo = parse(#start[ConcreteChoreography], |file:///M:/RascalTestNew/rascaltest/src/main/rascal/PoC/ChoreoLanguage/test.choreo|);
+  start[ConcreteChoreography] choreo = parse(#start[ConcreteChoreography], |file:///CHOREOGRAPHY_FILENAME|);
   AChoreography abstractChoreography = parseChoreographyToAST(choreo.top);
   
   // Checking well-formedness
