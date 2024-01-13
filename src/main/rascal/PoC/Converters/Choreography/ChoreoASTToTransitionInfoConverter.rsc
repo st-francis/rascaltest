@@ -14,7 +14,7 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::ProcessAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
 
-import PoC::Machines::AbstractStateMachine;
+import PoC::Machines::FiniteStateMachine;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
 
@@ -38,17 +38,17 @@ set[int] processedStateNos = {};
 // Main function to evaluate an choreographyConstruct and convert in to a set of TransitionInfo
 // INPUT  : @choreographyConstruct - the construct that represent the parsed choreography    
 // OUTPUT : The set of transitioninfos that are derived from the choreographyConstruct
-AbstractStateMachine convertChoreoASTToASM(str choreographyName, AChoreographyConstruct choreographyConstruct)
+FiniteStateMachine convertChoreoASTToFSM(str choreographyName, AChoreographyConstruct choreographyConstruct)
 {
   stateCounter = initialStateNo;
   transitionContainers = {};
   
   if(isTerminatingChorConstruct(choreographyConstruct))
   {
-    return AbstractStateMachine(choreographyName, "0", {});
+    return FiniteStateMachine(choreographyName, "0", {});
   }
   set[TransitionInfo] transitionInfo = buildTransitionInfo(choreographyConstruct);
-  return AbstractStateMachine(choreographyName, "0", transitionInfo);
+  return FiniteStateMachine(choreographyName, "0", transitionInfo);
 }
 
 // Function that retrieves the set of transitionInfos in a breadth-first manner

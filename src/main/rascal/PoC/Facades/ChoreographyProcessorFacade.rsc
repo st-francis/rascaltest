@@ -3,7 +3,7 @@ module PoC::Facades::ChoreographyProcessorFacade
 import PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter;
 import PoC::Converters::Process::ChoreoProcessASTsToTransitionInfoConverter;
 
-import PoC::Machines::AbstractStateMachine;
+import PoC::Machines::FiniteStateMachine;
 import PoC::Machines::AldebaranMachine;
 
 import PoC::Services::mCRL2Service;
@@ -33,21 +33,21 @@ void processChoreography(str choreographyFileName)
       throw "The choreography is not well-formed!";
   }
 
-  // (Action B) Convert to ASM
-  AbstractStateMachine machine  = convertChoreoASTToASM(abstractChoreography.name, abstractChoreography.choreographyConstruct);
+  // (Action B) Convert to FSM
+  FiniteStateMachine machine  = convertChoreoASTToFSM(abstractChoreography.name, abstractChoreography.choreographyConstruct);
 
   // (Action C) Check deadlock-freedom
-  bool isDeadockFreeChoreo      = isAbstractStateMachineDeadlockFree(machine, "test");
+  bool isDeadockFreeChoreo      = isFiniteStateMachineDeadlockFree(machine, "test");
 
   // (Action D) Parse process files based on choreography AST
   list[loc] processFiles = projectChoreographyToProcessSpecifications(choreo.top.content.choreographyConstruct);
   list[AChoreographyProcess] abstractProcesses = parseProcessFiles(processFiles);
 
-  // (Action E) Convert to ASM
-  AbstractStateMachine processMachine  = convertChoreoProcessASTsToASM(abstractChoreography.name, abstractProcesses);
+  // (Action E) Convert to FSM
+  FiniteStateMachine processMachine  = convertChoreoProcessASTsToFSM(abstractChoreography.name, abstractProcesses);
 
   // Check deadlock-freedom
-  bool isDeadockFreeProcess = isAbstractStateMachineDeadlockFree(processMachine, "processTest");
+  bool isDeadockFreeProcess = isFiniteStateMachineDeadlockFree(processMachine, "processTest");
 
   // (Action F) Check if machines are equivalent
   bool areMachinesEquivalent = areChoreographyMachineAndProcessMachineEquivalent("test","processTest");
@@ -70,10 +70,10 @@ start[ConcreteChoreography] parseChoreographyFile(str fileName) {
     return parse(#start[ConcreteChoreography], |file:///<fileName>|);
 }
 
-bool isAbstractStateMachineDeadlockFree(AbstractStateMachine abstractStateMachine, str fileName)
+bool isFiniteStateMachineDeadlockFree(FiniteStateMachine finiteStateMachine, str fileName)
 {
-  AldebaranMachine aldMachine = AldebaranMachine(abstractStateMachine.initialStateNr, getUniqueStates(abstractStateMachine.stateTransitions), abstractStateMachine.stateTransitions);
-  set[str] processActions     = getLabelActions(abstractStateMachine);
+  AldebaranMachine aldMachine = AldebaranMachine(finiteStateMachine.initialStateNr, getUniqueStates(finiteStateMachine.stateTransitions), finiteStateMachine.stateTransitions);
+  set[str] processActions     = getLabelActions(finiteStateMachine);
   str processLabels           = GetDataAndActionsString(processActions);
 
   return IsAldebaranMachineDeadlockFree(processLabels, aldMachine, fileName);

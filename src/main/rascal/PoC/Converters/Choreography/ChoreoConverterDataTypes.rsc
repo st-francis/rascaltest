@@ -1,7 +1,7 @@
 module PoC::Converters::Choreography::ChoreoConverterDataTypes
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
-import PoC::Machines::AbstractStateMachine;
+import PoC::Machines::FiniteStateMachine;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 
 // The TransitionContainer contains the relevant choreography construct and the related extra info 

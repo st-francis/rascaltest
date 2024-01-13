@@ -4,7 +4,7 @@ import PoC::CommonLanguageElements::AssignmentOperator;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::Converters::Process::ChoreoProcessASTsToTransitionInfoConverter;
 
-import PoC::Machines::AbstractStateMachine;
+import PoC::Machines::FiniteStateMachine;
 
 import String;
 import List;

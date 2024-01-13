@@ -1,6 +1,6 @@
 module PoC::Converters::Choreography::ChoreoAssignmentConverter
 
-import PoC::Machines::AbstractStateMachine;
+import PoC::Machines::FiniteStateMachine;
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 

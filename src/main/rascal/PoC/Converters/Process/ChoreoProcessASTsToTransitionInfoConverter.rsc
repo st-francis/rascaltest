@@ -17,7 +17,7 @@ import PoC::CommonLanguageElements::AssignmentOperator;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
 
-import PoC::Machines::AbstractStateMachine;
+import PoC::Machines::FiniteStateMachine;
 
 import Set;
 import List;
@@ -28,14 +28,14 @@ int initialStateNo = 0;
 int stateCounter;
 set[ProcessTransitionContainer] containers = {};
 
-AbstractStateMachine convertChoreoProcessASTsToASM(str name, list[AChoreographyProcess] processes)
+FiniteStateMachine convertChoreoProcessASTsToFSM(str name, list[AChoreographyProcess] processes)
 {
   containers = {};
   ProcessActionList initialActionList = ProcessActionList((process.name : process.processConstructs | AChoreographyProcess process <- processes), ());
   stateCounter = initialStateNo;
   BuildProcessTransitionContainersForActionList(initialActionList);
   set[TransitionInfo] transitionInfo =  {container.transitionInfo | ProcessTransitionContainer container <- containers};
-  return AbstractStateMachine(name, "0", transitionInfo);
+  return FiniteStateMachine(name, "0", transitionInfo);
 }
 
 void BuildProcessTransitionContainersForActionList(ProcessActionList initialActionList)

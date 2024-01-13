@@ -1,4 +1,4 @@
-module PoC::Machines::AbstractStateMachine
+module PoC::Machines::FiniteStateMachine
 
 import List;
 import Set;
@@ -6,7 +6,7 @@ import Set;
 data State = State(str nr);
 data Label = Label(str description, list[tuple[str, str]] arguments);
 data TransitionInfo = TransitionInfo(int prevStateNo, int nextStateNo, Label transitionLabel, TransitionType transitionType);
-data AbstractStateMachine = AbstractStateMachine(str machineName, str initialStateNr, set[TransitionInfo] stateTransitions);
+data FiniteStateMachine = FiniteStateMachine(str machineName, str initialStateNr, set[TransitionInfo] stateTransitions);
 data TransitionType = AssignmentTransition()
     | InteractionTransition(str sender, str receiver)
     | IfEvaluationTransition()
@@ -14,7 +14,7 @@ data TransitionType = AssignmentTransition()
     | TauTransition()
     ;
 
-set[str] getLabelActions(AbstractStateMachine stateMachine) {
+set[str] getLabelActions(FiniteStateMachine stateMachine) {
     return {getmCRL2ActionLabel(transition) | TransitionInfo transition <- stateMachine.stateTransitions};
 }
 
