@@ -2,7 +2,12 @@ module PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 
-import PoC::Converters::Choreography::ChoreographyConverterDataTypes;
+import PoC::Converters::Choreography::ChoreoConverterDataTypes;
+import PoC::Converters::Choreography::ChoreoAssignmentConverter;
+import PoC::Converters::Choreography::ChoreoInteractionConverter;
+import PoC::Converters::Choreography::ChoreoCompositionConverter;
+import PoC::Converters::Choreography::ChoreoIfStatementConverter;
+import PoC::Converters::Choreography::ChoreoWhileStatementConverter;
 
 import PoC::CommonLanguageElements::ExpressionAbstract;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
@@ -174,73 +179,6 @@ set[TransitionContainer] getStateProcessInteractions(AChoreographyConstruct chor
   }
 }
 
-map[str, map[str, AExchangeValueDeclaration]] getVariableAssignmentsForWhileConstructContent(AChoreographyConstruct content, map[str, map[str, AExchangeValueDeclaration]] variableAssignments )
-{
-  map[str, map[str, AExchangeValueDeclaration]] tempVariableAssignments = ();
-  switch(content)
-  {
-     case AChoreographyComposition(AChoreographyConstruct firstConstruct, AChoreographyConstruct secondConstruct):
-      tempVariableAssignments += getVariableAssignmentsForWhileConstructContent(firstConstruct,  variableAssignments) + getVariableAssignmentsForWhileConstructContent(secondConstruct, variableAssignments);
-    case AProcessInteraction(AProcess _, AExchangeValueDeclaration exchangeValueDeclaration, AProcess receivingProcess):
-      tempVariableAssignments += updateVariableAssignment(receivingProcess.name, receivingProcess.variableName, exchangeValueDeclaration, variableAssignments, AEmptyAssignmentOperator());
-    case AVariableAssignment(str processName, str variableName, AExchangeValueDeclaration exchangeValueDeclaration, AAssignmentOperator assignmentOperator):
-      tempVariableAssignments += updateVariableAssignment(processName, variableName, exchangeValueDeclaration, variableAssignments, assignmentOperator);
-    case AIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct):
-      tempVariableAssignments += getVariableUpdatesForIfStatement(expression, thenConstruct, elseConstruct, variableAssignments);
-    case AWhileStatement(AExpression expression, AChoreographyConstruct whileConstruct):
-      tempVariableAssignments += getVariableUpdatesForWhileStatement(expression, whileConstruct, variableAssignments);
-    case AEmptyChoreographyConstruct():
-      tempVariableAssignments += ();
-  }
-
-  return tempVariableAssignments;
-}
-
-map[str, map[str, AExchangeValueDeclaration]] getVariableUpdatesForWhileStatement(AExpression expression, AChoreographyConstruct whileConstruct, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
-{
-    bool evaluationRes = evaluateExpression(expression, variableAssignments);
-    if(evaluationRes)
-    {
-      return getVariableAssignmentsForWhileConstructContent(whileConstruct, variableAssignments);
-    }
-    else
-    {
-      return ();
-    }
-}
-
-map[str, map[str, AExchangeValueDeclaration]] getVariableUpdatesForIfStatement(AExpression expression, AChoreographyConstruct thenConstruct, AChoreographyConstruct elseConstruct, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
-{
-  bool evaluationRes = evaluateExpression(expression, variableAssignments);
-  if(evaluationRes)
-  {
-    return getVariableAssignmentsForWhileConstructContent(thenConstruct, variableAssignments);
-  }
-  else
-  {
-    return getVariableAssignmentsForWhileConstructContent(elseConstruct, variableAssignments);
-  }
-}
-
-bool doesWhileContentMakeAnyDifference(AChoreographyConstruct whileConstruct, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
-{
-  map[str, map[str, AExchangeValueDeclaration]] tempVars = getVariableAssignmentsForWhileConstructContent(whileConstruct, variableAssignments);
-  
-  bool hasDifference = false; 
-  for(str processName <- tempVars)
-  {
-    for(str varName <- tempVars[processName])
-    {
-      if(!(processName in variableAssignments) || !(varName in variableAssignments[processName]) || variableAssignments[processName][varName] != tempVars[processName][varName])
-      {
-        hasDifference = true;
-      }
-    }
-  }
-
-  return hasDifference;
-}
-
 bool equivalentStateExists(AChoreographyConstruct remainingConstruct, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
 {
   for(TransitionContainer container <- transitionContainers)
@@ -254,74 +192,6 @@ bool equivalentStateExists(AChoreographyConstruct remainingConstruct, map[str, m
   return false;
 }
 
-// Function returns the containers when an while-statement is encountered 
-// INPUT  : @baseConstruct the construct for the while-statement
-// INPUT  : @currentState the current state number
-// INPUT  : @variableAssignments the current variableAssignments
-// OUTPUT : The set of containers based on the while-statement
-set[TransitionContainer] transitionContainerForWhileStatement(AChoreographyConstruct baseConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments, bool partOfComposition, AChoreographyConstruct baseConstructWithAdditionalConstructs)
-{
-  bool enterWhile = evaluateExpression(baseConstruct.expression, variableAssignments);
-
-  AChoreographyConstruct remainingConstruct = AEmptyChoreographyConstruct();
-  if(enterWhile)
-  {
-      remainingConstruct = (partOfComposition) ? baseConstruct.whileConstruct : AChoreographyComposition(baseConstruct.whileConstruct, baseConstruct);
-
-      AChoreographyConstruct constructToBeChecked = remainingConstruct;
-      if(!(baseConstructWithAdditionalConstructs is AEmptyChoreographyConstruct))
-      {
-        constructToBeChecked = AChoreographyComposition(remainingConstruct, baseConstructWithAdditionalConstructs);
-      }
-      
-      bool whileContentMakesAnyDifference = doesWhileContentMakeAnyDifference(baseConstruct.whileConstruct, variableAssignments);
-      bool equivalentStateAlreadyExists = equivalentStateExists(constructToBeChecked, variableAssignments);
-      if(!whileContentMakesAnyDifference && equivalentStateAlreadyExists)
-      {
-        return {};
-      }
-  }
-
-  return {TransitionContainer(baseConstruct, 
-                                  TransitionContainerExtraInfo(remainingConstruct, 
-                                                              TransitionInfo(
-                                                                currentState, 
-                                                                getStateCounter(AEmptyChoreographyConstruct(), false, variableAssignments),
-                                                                getWhileStatementEvaluationLabel(enterWhile),
-                                                                WhileEvaluationTransition()),
-                                                              variableAssignments))};
-}
-
-// Function returns the containers when an if-statement is encountered 
-// INPUT  : @ifConstruct the construct for the if-statement
-// INPUT  : @expression the expression for the if-statement
-// INPUT  : @thenConstruct the construct that needs to be processed if the expression evaluates to true
-// INPUT  : @elseConstruct the construct that needs to be processed if the expression evaluates to false
-// INPUT  : @currentState the current state number
-// INPUT  : @variableAssignments the current variableAssignments
-// OUTPUT : The set of containers based on the if-statement
-set[TransitionContainer] transitionContainerForIfStatement(AChoreographyConstruct ifConstruct, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
-{
-  bool evaluateThen = evaluateExpression(ifConstruct.expression, variableAssignments);
-  AChoreographyConstruct remainingConstruct = AEmptyChoreographyConstruct();
-  if(evaluateThen)
-  {
-    remainingConstruct = ifConstruct.thenConstruct;
-  }
-  else
-  {
-    remainingConstruct = ifConstruct.elseConstruct;
-  }
-
-  return {TransitionContainer(ifConstruct, 
-                                      TransitionContainerExtraInfo(remainingConstruct, 
-                                                                  TransitionInfo(
-                                                                    currentState, 
-                                                                    getStateCounter(AEmptyChoreographyConstruct(), false, variableAssignments),
-                                                                    getIfStatementEvaluationLabel(evaluateThen),
-                                                                    IfEvaluationTransition()),
-                                                                  variableAssignments))};
-}
 
 // Function that updates the variable assignments 
 // INPUT  : @processName - name of the process that has an updated variable
@@ -355,115 +225,6 @@ map[str, map[str, AExchangeValueDeclaration]] updateVariableAssignment(str proce
   return variableAssignments;
 }
 
-// Function that returns a container for the assignment of a variable
-// INPUT  : @assignment - the construct that contains the assignment
-// INPUT  : @currentState - state number from the state where the assignment is executed
-// OUTPUT : The set of next containers after the assignment
-set[TransitionContainer] transitionContainerForAssignment(AChoreographyConstruct assignment, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
-{
-  // update variable collection
-  map[str, map[str, AExchangeValueDeclaration]] newAssignments = ();
-  str processName = "<assignment.processName>";
-  str variableName = "<assignment.variableName>";
-  
-  newAssignments = updateVariableAssignment(processName, variableName, assignment.exchangeValueDeclaration, variableAssignments, assignment.assignmentOperator);
-
-  // return transition
-  return {TransitionContainer(assignment, TransitionContainerExtraInfo(AEmptyChoreographyConstruct(), 
-                                                                               TransitionInfo(
-                                                                                currentState, 
-                                                                                getStateCounter(AEmptyChoreographyConstruct(), false, newAssignments),
-                                                                                getAssignmentLabel(
-                                                                                  assignment.processName,
-                                                                                  assignment.variableName,
-                                                                                  assignment.exchangeValueDeclaration,
-                                                                                  assignment.assignmentOperator
-                                                                                ),
-                                                                                AssignmentTransition()),
-                                                                                newAssignments))};
-}
-
-// Function that returns the containers when an interaction construct is encountered
-// INPUT  : @interaction - the interaction construct 
-// INPUT  : @currentState - the current state from which the transition is departing
-// OUTPUT : The set of containers as a result of the interaction
-set[TransitionContainer] transitionContainerForInteraction(AChoreographyConstruct interaction, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
-{
-  map[str, map[str, AExchangeValueDeclaration]] newAssignments = updateVariableAssignment("<interaction.receivingProcess.name>","<interaction.receivingProcess.variableName>", interaction.exchangeValueDeclaration, variableAssignments, AEmptyAssignmentOperator());
-
-  return {TransitionContainer(interaction, TransitionContainerExtraInfo(AEmptyChoreographyConstruct(), 
-                                                                              TransitionInfo(
-                                                                              currentState, 
-                                                                              getStateCounter(AEmptyChoreographyConstruct(), false, newAssignments),
-                                                                              getInteractionLabel(
-                                                                                interaction.sendingProcess.name,
-                                                                                interaction.receivingProcess.name,
-                                                                                interaction.sendingProcess.variableName,
-                                                                                interaction.receivingProcess.variableName,
-                                                                                interaction.exchangeValueDeclaration
-                                                                              ),
-                                                                              InteractionTransition(interaction.sendingProcess.name, interaction.receivingProcess.name)),
-                                                                              newAssignments))};
-}
-
-// Function that returns the process containers for a composition construct 
-// It returns a transition to the first construct of the composition
-// In addition it returns containers for constructs that have no overlapping names with the first construct of the composition
-// INPUT  : @composition - the composition construct
-// INPUT  : @currentState - the current state from which the composition is encountered 
-// OUTPUT : A set of interaction containers as a result of the composition
-set[TransitionContainer] transitionContainerForComposition(AChoreographyConstruct composition, int currentState, map[str, map[str, AExchangeValueDeclaration]] variableAssignments)
-{
-  AChoreographyConstruct toBeAddedToFirstConstruct = composition.secondConstruct;
-
-  // construct 1 check
-  if(composition.firstConstruct is AWhileStatement)
-  {
-    bool isWhileEntered = evaluateExpression(composition.firstConstruct.expression, variableAssignments);
-
-    if(isWhileEntered)
-    {
-      toBeAddedToFirstConstruct = AChoreographyComposition(composition.firstConstruct, composition.secondConstruct);
-    }
-  }
-
-  // (1) Getting set1
-  set[TransitionContainer] set1 = { TransitionContainer(interaction.construct,
-                                            TransitionContainerExtraInfo(
-                                              composeChorConstructs(interaction.extraInfo.requiredChor, toBeAddedToFirstConstruct),
-                                              TransitionInfo(
-                                                currentState, 
-                                                getStateCounter(AEmptyChoreographyConstruct(), false, interaction.extraInfo.variableAssignments), 
-                                                interaction.extraInfo.transitionInfo.transitionLabel,
-                                                interaction.extraInfo.transitionInfo.transitionType
-                                              ),
-                                              interaction.extraInfo.variableAssignments
-                                            ))
-                                            | TransitionContainer interaction <- getStateProcessInteractions(composition.firstConstruct, currentState, variableAssignments, true, toBeAddedToFirstConstruct)};
-
-
-  // (2) Getting set2
-  set[TransitionContainer] set2 = { TransitionContainer(interaction.construct, 
-                                            TransitionContainerExtraInfo(
-                                              composeChorConstructs(composition.firstConstruct, 
-                                              interaction.extraInfo.requiredChor), 
-                                              TransitionInfo(
-                                                currentState, 
-                                                getStateCounter(AEmptyChoreographyConstruct(), false, interaction.extraInfo.variableAssignments), 
-                                                interaction.extraInfo.transitionInfo.transitionLabel,
-                                                interaction.extraInfo.transitionInfo.transitionType
-                                                ),
-                                                interaction.extraInfo.variableAssignments)
-                                            ) 
-                                          | TransitionContainer interaction <- getStateProcessInteractions(composition.secondConstruct, currentState, variableAssignments, true, composition.secondConstruct)
-                                          , !hasOverlappingProcessNames(tryGetFirstChoreographyConstruct(set1), interaction.construct)};
-
-  // (3) Unifying the two sets
-  set1 += set2;
-
-  // (4) Returning the sets
-  return set1;
-}
 
 AChoreographyConstruct tryGetFirstChoreographyConstruct(set[TransitionContainer] containers)
 {

@@ -1,4 +1,4 @@
-module PoC::Converters::Choreography::ChoreographyConverterDataTypes
+module PoC::Converters::Choreography::ChoreoConverterDataTypes
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 import PoC::Machines::AbstractStateMachine;
