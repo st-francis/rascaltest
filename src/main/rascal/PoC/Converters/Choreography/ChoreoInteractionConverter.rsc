@@ -10,7 +10,7 @@ import PoC::CommonLanguageElements::AssignmentOperator;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter;
+import PoC::Converters::Choreography::ChoreoASTToFSMConverter;
 import PoC::Converters::Choreography::ChoreoConverterDataTypes;
 
 // Function that returns the containers when an interaction construct is encountered

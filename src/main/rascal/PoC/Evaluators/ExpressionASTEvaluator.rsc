@@ -4,6 +4,10 @@ import PoC::CommonLanguageElements::ExpressionAbstract;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::ProcessAbstract;
 
+import PoC::ChoreoProcessLanguage::ChoreoProcessAbstract;
+
+import PoC::Converters::Process::ChoreoProcessDataTypes;
+
 import String;
 import Boolean;
 
@@ -66,3 +70,21 @@ AExpression getExpressionValueForProcessDeclaration(AProcess processVariableDecl
 
   return AEmptyExpression();
 }
+
+set[bool] evaluateAllExpressions(ProcessActionList actionList)
+ {
+    set[bool] evaluationResults = {};
+    for (str name <- actionList.processInfo) {
+      AProcessConstruct construct = actionList.processInfo[name][0];
+
+      if (construct is AProcessIfStatement || construct is AProcessWhileStatement) 
+      {
+        evaluationResults += evaluateExpression(construct.expression, actionList.varAssignments);
+      } 
+      else 
+      {
+        evaluationResults += evaluateExpression(construct.construct1.expression, actionList.varAssignments);
+      }
+    }
+    return evaluationResults;
+ }

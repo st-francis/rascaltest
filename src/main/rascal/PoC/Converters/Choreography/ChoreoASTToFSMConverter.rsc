@@ -1,4 +1,4 @@
-module PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter
+module PoC::Converters::Choreography::ChoreoASTToFSMConverter
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 

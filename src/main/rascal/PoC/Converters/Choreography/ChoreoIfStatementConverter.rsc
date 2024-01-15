@@ -8,7 +8,7 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Converters::Choreography::ChoreoASTToTransitionInfoConverter;
+import PoC::Converters::Choreography::ChoreoASTToFSMConverter;
 import PoC::Converters::Choreography::ChoreoConverterDataTypes;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
