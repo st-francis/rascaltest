@@ -3,7 +3,7 @@ module PoC::Converters::Process::ChoreoProcessIfStatementConverter
 import PoC::ChoreoProcessLanguage::ChoreoProcessAbstract;
 
 import PoC::Converters::Process::ChoreoProcessDataTypes;
-import PoC::Converters::Process::ChoreoProcessASTsToFSMConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToLTSConverter;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
 
@@ -11,7 +11,7 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import IO;
 import List;

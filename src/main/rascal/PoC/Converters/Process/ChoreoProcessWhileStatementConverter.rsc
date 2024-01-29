@@ -3,14 +3,14 @@ module PoC::Converters::Process::ChoreoProcessWhileStatementConverter
 import PoC::ChoreoProcessLanguage::ChoreoProcessAbstract;
 
 import PoC::Converters::Process::ChoreoProcessDataTypes;
-import PoC::Converters::Process::ChoreoProcessASTsToFSMConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToLTSConverter;
 
 import PoC::Utils::ActionListUtil;
 import PoC::Utils::LabelUtil;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import IO;
 import Set;

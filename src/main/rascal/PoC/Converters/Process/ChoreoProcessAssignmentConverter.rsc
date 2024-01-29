@@ -3,13 +3,13 @@ module PoC::Converters::Process::ChoreoProcessAssignmentConverter
 import PoC::ChoreoProcessLanguage::ChoreoProcessAbstract;
 
 import PoC::Converters::Process::ChoreoProcessDataTypes;
-import PoC::Converters::Process::ChoreoProcessASTsToFSMConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToLTSConverter;
 
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 
 ProcessTransitionContainer getProcessTransitionContainerForAssignment(str processName, AProcessConstruct processConstruct, ProcessActionList previousActionList, int prevStateNo)

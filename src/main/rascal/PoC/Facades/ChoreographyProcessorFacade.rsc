@@ -1,9 +1,9 @@
 module PoC::Facades::ChoreographyProcessorFacade
 
-import PoC::Converters::Choreography::ChoreoASTToFSMConverter;
-import PoC::Converters::Process::ChoreoProcessASTsToFSMConverter;
+import PoC::Converters::Choreography::ChoreoASTToLTSConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToLTSConverter;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 import PoC::Machines::AldebaranMachine;
 
 import PoC::Services::mCRL2Service;
@@ -33,21 +33,21 @@ void processChoreography(str choreographyFileName)
       throw "The choreography is not well-formed!";
   }
 
-  // (Action B) Convert to FSM
-  FiniteStateMachine machine  = convertChoreoASTToFSM(abstractChoreography.name, abstractChoreography.choreographyConstruct);
+  // (Action B) Convert to LTS
+  LabeledTransitionSystem labeledTransitionSystem  = convertChoreoASTToLTS(abstractChoreography.name, abstractChoreography.choreographyConstruct);
 
   // (Action C) Check deadlock-freedom
-  bool isDeadockFreeChoreo      = isFiniteStateMachineDeadlockFree(machine, "test");
+  bool isDeadockFreeChoreo      = isLTSDeadlockFree(labeledTransitionSystem, "test");
 
   // (Action D) Parse process files based on choreography AST
   list[loc] processFiles = projectChoreographyToProcessSpecifications(choreo.top.content.choreographyConstruct);
   list[AChoreographyProcess] abstractProcesses = parseProcessFiles(processFiles);
 
-  // (Action E) Convert to FSM
-  FiniteStateMachine processMachine  = convertChoreoProcessASTsToFSM(abstractChoreography.name, abstractProcesses);
+  // (Action E) Convert to LTS
+  LabeledTransitionSystem processLTS  = convertChoreoProcessASTsToLTS(abstractChoreography.name, abstractProcesses);
 
   // Check deadlock-freedom
-  bool isDeadockFreeProcess = isFiniteStateMachineDeadlockFree(processMachine, "processTest");
+  bool isDeadockFreeProcess = isLTSDeadlockFree(processLTS, "processTest");
 
   // (Action F) Check if machines are equivalent
   bool areMachinesEquivalent = areChoreographyMachineAndProcessMachineEquivalent("test","processTest");
@@ -70,10 +70,10 @@ start[ConcreteChoreography] parseChoreographyFile(str fileName) {
     return parse(#start[ConcreteChoreography], |file:///<fileName>|);
 }
 
-bool isFiniteStateMachineDeadlockFree(FiniteStateMachine finiteStateMachine, str fileName)
+bool isLTSDeadlockFree(LabeledTransitionSystem labeledTransitionSystem, str fileName)
 {
-  AldebaranMachine aldMachine = AldebaranMachine(finiteStateMachine.initialStateNr, getUniqueStates(finiteStateMachine.stateTransitions), finiteStateMachine.stateTransitions);
-  set[str] processActions     = getLabelActions(finiteStateMachine);
+  AldebaranMachine aldMachine = AldebaranMachine(labeledTransitionSystem.initialStateNr, getUniqueStates(labeledTransitionSystem.stateTransitions), labeledTransitionSystem.stateTransitions);
+  set[str] processActions     = getLabelActions(labeledTransitionSystem);
   str processLabels           = GetDataAndActionsString(processActions);
 
   return IsAldebaranMachineDeadlockFree(processLabels, aldMachine, fileName);

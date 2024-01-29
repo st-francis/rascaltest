@@ -1,4 +1,4 @@
-module PoC::Converters::Process::ChoreoProcessASTsToFSMConverter
+module PoC::Converters::Process::ChoreoProcessASTsToLTSConverter
 
 import PoC::Utils::ActionListUtil;
 import PoC::Utils::LabelUtil;
@@ -19,7 +19,7 @@ import PoC::CommonLanguageElements::AssignmentOperator;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import Set;
 import List;
@@ -30,14 +30,14 @@ int initialStateNo = 0;
 int stateCounter;
 set[ProcessTransitionContainer] containers = {};
 
-FiniteStateMachine convertChoreoProcessASTsToFSM(str name, list[AChoreographyProcess] processes)
+LabeledTransitionSystem convertChoreoProcessASTsToLTS(str name, list[AChoreographyProcess] processes)
 {
   containers = {};
   ProcessActionList initialActionList = ProcessActionList((process.name : process.processConstructs | AChoreographyProcess process <- processes), ());
   stateCounter = initialStateNo;
   buildProcessTransitionContainersForActionList(initialActionList);
   set[TransitionInfo] transitionInfo =  {container.transitionInfo | ProcessTransitionContainer container <- containers};
-  return FiniteStateMachine(name, "0", transitionInfo);
+  return LabeledTransitionSystem(name, "0", transitionInfo);
 }
 
 void buildProcessTransitionContainersForActionList(ProcessActionList initialActionList)
@@ -106,7 +106,9 @@ bool containerMatchesInteraction(ProcessTransitionContainer container1, ProcessT
     || container1.transitionInfo.transitionType is IfEvaluationTransition
     || container2.transitionInfo.transitionType is IfEvaluationTransition
     || container1.transitionInfo.transitionType is WhileEvaluationTransition
-    || container2.transitionInfo.transitionType is WhileEvaluationTransition)
+    || container2.transitionInfo.transitionType is WhileEvaluationTransition
+    || container1.transitionInfo.transitionType is TauTransition
+    || container2.transitionInfo.transitionType is TauTransition)
     {
       return false;
     }
@@ -119,9 +121,9 @@ bool containerMatchesInteraction(ProcessTransitionContainer container1, ProcessT
         return true;
       }
 
-    return container1.transitionInfo.transitionType.sender == container2.transitionInfo.transitionType.sender &&
-        container1.transitionInfo.transitionType.receiver == container2.transitionInfo.transitionType.receiver &&
-        !(container2.transitionInfo.transitionType is TauTransition);
+    return 
+        container1.transitionInfo.transitionType.sender == container2.transitionInfo.transitionType.sender &&
+        container1.transitionInfo.transitionType.receiver == container2.transitionInfo.transitionType.receiver;
 }
 
 set[ProcessTransitionContainer] addContainers(set[ProcessTransitionContainer] newContainers)

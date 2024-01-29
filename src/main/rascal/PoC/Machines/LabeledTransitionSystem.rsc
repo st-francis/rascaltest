@@ -1,4 +1,4 @@
-module PoC::Machines::FiniteStateMachine
+module PoC::Machines::LabeledTransitionSystem
 
 import List;
 import Set;
@@ -6,7 +6,7 @@ import Set;
 data State = State(str nr);
 data Label = Label(str description, list[tuple[str, str]] arguments);
 data TransitionInfo = TransitionInfo(int prevStateNo, int nextStateNo, Label transitionLabel, TransitionType transitionType);
-data FiniteStateMachine = FiniteStateMachine(str machineName, str initialStateNr, set[TransitionInfo] stateTransitions);
+data LabeledTransitionSystem = LabeledTransitionSystem(str machineName, str initialStateNr, set[TransitionInfo] stateTransitions);
 data TransitionType = AssignmentTransition()
     | InteractionTransition(str sender, str receiver)
     | IfEvaluationTransition()
@@ -14,8 +14,8 @@ data TransitionType = AssignmentTransition()
     | TauTransition()
     ;
 
-set[str] getLabelActions(FiniteStateMachine stateMachine) {
-    return {getmCRL2ActionLabel(transition) | TransitionInfo transition <- stateMachine.stateTransitions};
+set[str] getLabelActions(LabeledTransitionSystem transitionSystem) {
+    return {getmCRL2ActionLabel(transition) | TransitionInfo transition <- transitionSystem.stateTransitions};
 }
 
 int getUniqueStates(set[TransitionInfo] stateTransitions){

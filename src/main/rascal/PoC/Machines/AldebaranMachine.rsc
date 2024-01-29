@@ -1,6 +1,6 @@
 module PoC::Machines::AldebaranMachine
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 import List;
 import Set;
 import String;

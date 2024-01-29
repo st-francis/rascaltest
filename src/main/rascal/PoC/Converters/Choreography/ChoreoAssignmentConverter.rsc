@@ -1,6 +1,6 @@
 module PoC::Converters::Choreography::ChoreoAssignmentConverter
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 
@@ -8,7 +8,7 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Converters::Choreography::ChoreoASTToFSMConverter;
+import PoC::Converters::Choreography::ChoreoASTToLTSConverter;
 import PoC::Converters::Choreography::ChoreoConverterDataTypes;
 
 // Function that returns a container for the assignment of a variable

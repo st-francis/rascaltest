@@ -3,14 +3,14 @@ module PoC::Converters::Process::ChoreoProcessInteractionConverter
 import PoC::ChoreoProcessLanguage::ChoreoProcessAbstract;
 
 import PoC::Converters::Process::ChoreoProcessDataTypes;
-import PoC::Converters::Process::ChoreoProcessASTsToFSMConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToLTSConverter;
 
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import List;
 

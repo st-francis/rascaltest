@@ -1,6 +1,6 @@
 module PoC::Converters::Process::ChoreoProcessDataTypes
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 import PoC::ChoreoProcessLanguage::ChoreoProcessAbstract;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
 

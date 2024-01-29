@@ -1,4 +1,4 @@
-module PoC::Converters::Choreography::ChoreoASTToFSMConverter
+module PoC::Converters::Choreography::ChoreoASTToLTSConverter
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 
@@ -14,7 +14,7 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 import PoC::CommonLanguageElements::ProcessAbstract;
 import PoC::CommonLanguageElements::AssignmentOperator;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
 
@@ -38,17 +38,17 @@ set[int] processedStateNos = {};
 // Main function to evaluate an choreographyConstruct and convert in to a set of TransitionInfo
 // INPUT  : @choreographyConstruct - the construct that represent the parsed choreography    
 // OUTPUT : The set of transitioninfos that are derived from the choreographyConstruct
-FiniteStateMachine convertChoreoASTToFSM(str choreographyName, AChoreographyConstruct choreographyConstruct)
+LabeledTransitionSystem convertChoreoASTToLTS(str choreographyName, AChoreographyConstruct choreographyConstruct)
 {
   stateCounter = initialStateNo;
   transitionContainers = {};
   
   if(isTerminatingChorConstruct(choreographyConstruct))
   {
-    return FiniteStateMachine(choreographyName, "0", {});
+    return LabeledTransitionSystem(choreographyName, "0", {});
   }
   set[TransitionInfo] transitionInfo = buildTransitionInfo(choreographyConstruct);
-  return FiniteStateMachine(choreographyName, "0", transitionInfo);
+  return LabeledTransitionSystem(choreographyName, "0", transitionInfo);
 }
 
 // Function that retrieves the set of transitionInfos in a breadth-first manner
@@ -72,7 +72,7 @@ set[TransitionInfo] buildTransitionInfo(AChoreographyConstruct choreographyConst
 
 // Function that comprehends the set of TransitionContainers and returs a new set of transitionInfos
 // INPUT : @TransitionContainers - the interaction containers that are derived from the base construct
-// OUTPT : a set of transitioninfos that contain the relevant info for the FSM  
+// OUTPT : a set of transitioninfos that contain the relevant info for the LTS  
 set[TransitionInfo] extractTransitionInfo(set[TransitionContainer] TransitionContainers)
 {
   return {container.extraInfo.transitionInfo | TransitionContainer container <- TransitionContainers};

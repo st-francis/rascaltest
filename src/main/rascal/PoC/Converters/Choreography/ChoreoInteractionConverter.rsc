@@ -1,6 +1,6 @@
 module PoC::Converters::Choreography::ChoreoInteractionConverter
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 
@@ -10,7 +10,7 @@ import PoC::CommonLanguageElements::AssignmentOperator;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Converters::Choreography::ChoreoASTToFSMConverter;
+import PoC::Converters::Choreography::ChoreoASTToLTSConverter;
 import PoC::Converters::Choreography::ChoreoConverterDataTypes;
 
 // Function that returns the containers when an interaction construct is encountered

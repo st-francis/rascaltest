@@ -2,9 +2,9 @@ module PoC::Utils::LabelUtil
 
 import PoC::CommonLanguageElements::AssignmentOperator;
 import PoC::CommonLanguageElements::ExchangeValueAbstract;
-import PoC::Converters::Process::ChoreoProcessASTsToFSMConverter;
+import PoC::Converters::Process::ChoreoProcessASTsToLTSConverter;
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import String;
 

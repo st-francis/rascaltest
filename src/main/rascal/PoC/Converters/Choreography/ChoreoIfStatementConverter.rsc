@@ -1,6 +1,6 @@
 module PoC::Converters::Choreography::ChoreoIfStatementConverter
 
-import PoC::Machines::FiniteStateMachine;
+import PoC::Machines::LabeledTransitionSystem;
 
 import PoC::ChoreoLanguage::ChoreoAbstract;
 
@@ -8,7 +8,7 @@ import PoC::CommonLanguageElements::ExchangeValueAbstract;
 
 import PoC::Utils::LabelUtil;
 
-import PoC::Converters::Choreography::ChoreoASTToFSMConverter;
+import PoC::Converters::Choreography::ChoreoASTToLTSConverter;
 import PoC::Converters::Choreography::ChoreoConverterDataTypes;
 
 import PoC::Evaluators::ExpressionASTEvaluator;
