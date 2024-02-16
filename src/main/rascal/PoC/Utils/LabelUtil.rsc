@@ -15,7 +15,9 @@ Label getTauLabel()
 
 Label getFinalTauLabel()
 {
-    return Label("FinalT", []);
+    //Dont use for now
+    //return Label("FinalT", []);
+    return Label("T", []);
 }
 
 

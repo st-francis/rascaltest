@@ -14,7 +14,7 @@ bool everyProcessOccursInExpression(ChoreographyConstruct construct)
   
   if(!validConstructConditions)
   {
-    println("One of the expressions is not well-formed!");
+    println("NOt every process occurs in each expression!");
   }
 
   return validConstructConditions;

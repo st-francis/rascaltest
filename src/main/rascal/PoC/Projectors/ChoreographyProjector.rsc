@@ -262,7 +262,7 @@ void createProcessFiles(set[str] uniqueProcessNames)
 {
   for(str processName <- uniqueProcessNames)
   {
-    loc location =  |file:///C:/Users/marco/RascalTest/rascaltest/src/main/<processName>.proc|;
+    loc location =  |file:///M:/RascalTestNew/rascaltest/src/main/<processName>.proc|;
     list[str] firstLines = ["process <processName> \n", "\u007B \n"];
     processFiles[processName] = ProcessFileData(location, firstLines);
   }

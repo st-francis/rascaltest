@@ -1,6 +1,5 @@
 module PoC::CommonLanguageElements::ExpressionAbstract
 
-import PoC::ChoreoLanguage::ChoreoAbstract;
 import PoC::CommonLanguageElements::ProcessAbstract;
 
 data AExpression

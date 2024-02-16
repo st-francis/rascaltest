@@ -1,0 +1,8 @@
+process David 
+{ 
+
+  x1 := 10:Int;
+  TAU;
+  TAU;
+  TAU
+}

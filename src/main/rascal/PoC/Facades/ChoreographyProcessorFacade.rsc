@@ -21,12 +21,17 @@ import PoC::Projectors::ChoreographyProjector;
 import PoC::Classifiers::ChoreographyClassifier; 
 
 import ParseTree;
+import IO;
 
 void processChoreography(str choreographyFileName)
 {
+  str choreographyFile = "choreography";
+  str processCompositionFile = "processComposition";
+
   // (Action A) Parsing choreography file to a AST
   start[ConcreteChoreography] choreo = parseChoreographyFile(choreographyFileName);
   AChoreography abstractChoreography = parseChoreographyToAST(choreo.top);
+  println("Abstract choreography: <abstractChoreography>");
   
   // Checking well-formedness
   if (!isChoreographyWellFormed(choreo.top.content.choreographyConstruct, abstractChoreography)) {
@@ -37,7 +42,7 @@ void processChoreography(str choreographyFileName)
   LabeledTransitionSystem labeledTransitionSystem  = convertChoreoASTToLTS(abstractChoreography.name, abstractChoreography.choreographyConstruct);
 
   // (Action C) Check deadlock-freedom
-  bool isDeadockFreeChoreo      = isLTSDeadlockFree(labeledTransitionSystem, "test");
+  bool isDeadockFreeChoreo      = isLTSDeadlockFree(labeledTransitionSystem, choreographyFile);
 
   // (Action D) Parse process files based on choreography AST
   list[loc] processFiles = projectChoreographyToProcessSpecifications(choreo.top.content.choreographyConstruct);
@@ -47,10 +52,10 @@ void processChoreography(str choreographyFileName)
   LabeledTransitionSystem processLTS  = convertChoreoProcessASTsToLTS(abstractChoreography.name, abstractProcesses);
 
   // Check deadlock-freedom
-  bool isDeadockFreeProcess = isLTSDeadlockFree(processLTS, "processTest");
+  bool isDeadockFreeProcess = isLTSDeadlockFree(processLTS, processCompositionFile);
 
   // (Action F) Check if machines are equivalent
-  bool areMachinesEquivalent = areChoreographyMachineAndProcessMachineEquivalent("test","processTest");
+  bool areMachinesEquivalent = doLTSIncludeEachOther(choreographyFile, processCompositionFile);
 }
 
 list[AChoreographyProcess] parseProcessFiles(list[loc] processFiles) {

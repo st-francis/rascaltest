@@ -8,9 +8,8 @@ process Alice
   }else{
   Bob?y1
   };
-  while(Alice.x1!=13){
+  while(Alice.x1==11){
   x1 := 12:Int;
   Bob!(12:Int)
-  };
-  x1 := 13:Int
+  }
 }

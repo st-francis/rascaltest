@@ -2,7 +2,8 @@ module PoC::Main
 
 import PoC::Facades::ChoreographyProcessorFacade;
 
+
 void main()
 {
-  processChoreography("CHOREOGRAPHY_FILE_LOCATION");
+  processChoreography("M:/RascalTestNew/rascaltest/src/main/rascal/PoC/ChoreoLanguage/test.choreo");
 }
