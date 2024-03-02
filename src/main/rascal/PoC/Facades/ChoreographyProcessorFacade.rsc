@@ -23,7 +23,7 @@ import PoC::Classifiers::ChoreographyClassifier;
 import ParseTree;
 import IO;
 
-void processChoreography(str choreographyFileName)
+void processChoreography(str choreographyFileName, str defaultFileLocation)
 {
   str choreographyFile = "choreography";
   str processCompositionFile = "processComposition";
@@ -42,20 +42,20 @@ void processChoreography(str choreographyFileName)
   LabeledTransitionSystem labeledTransitionSystem  = convertChoreoASTToLTS(abstractChoreography.name, abstractChoreography.choreographyConstruct);
 
   // (Action C) Check deadlock-freedom
-  bool isDeadockFreeChoreo      = isLTSDeadlockFree(labeledTransitionSystem, choreographyFile);
+  bool isDeadockFreeChoreo      = isLTSDeadlockFree(labeledTransitionSystem, choreographyFile, defaultFileLocation);
 
   // (Action D) Parse process files based on choreography AST
-  list[loc] processFiles = projectChoreographyToProcessSpecifications(choreo.top.content.choreographyConstruct);
+  list[loc] processFiles = projectChoreographyToProcessSpecifications(choreo.top.content.choreographyConstruct, defaultFileLocation);
   list[AChoreographyProcess] abstractProcesses = parseProcessFiles(processFiles);
 
   // (Action E) Convert to LTS
   LabeledTransitionSystem processLTS  = convertChoreoProcessASTsToLTS(abstractChoreography.name, abstractProcesses);
 
   // Check deadlock-freedom
-  bool isDeadockFreeProcess = isLTSDeadlockFree(processLTS, processCompositionFile);
+  bool isDeadockFreeProcess = isLTSDeadlockFree(processLTS, processCompositionFile, defaultFileLocation);
 
   // (Action F) Check if machines are equivalent
-  bool areMachinesEquivalent = doLTSIncludeEachOther(choreographyFile, processCompositionFile);
+  bool areMachinesEquivalent = doLTSIncludeEachOther(choreographyFile, processCompositionFile, defaultFileLocation);
 }
 
 list[AChoreographyProcess] parseProcessFiles(list[loc] processFiles) {
@@ -75,11 +75,11 @@ start[ConcreteChoreography] parseChoreographyFile(str fileName) {
     return parse(#start[ConcreteChoreography], |file:///<fileName>|);
 }
 
-bool isLTSDeadlockFree(LabeledTransitionSystem labeledTransitionSystem, str fileName)
+bool isLTSDeadlockFree(LabeledTransitionSystem labeledTransitionSystem, str fileName, str defaultFileLocation)
 {
   AldebaranMachine aldMachine = AldebaranMachine(labeledTransitionSystem.initialStateNr, getUniqueStates(labeledTransitionSystem.stateTransitions), labeledTransitionSystem.stateTransitions);
   set[str] processActions     = getLabelActions(labeledTransitionSystem);
   str processLabels           = GetDataAndActionsString(processActions);
 
-  return IsAldebaranMachineDeadlockFree(processLabels, aldMachine, fileName);
+  return IsAldebaranMachineDeadlockFree(processLabels, aldMachine, fileName, defaultFileLocation);
 }

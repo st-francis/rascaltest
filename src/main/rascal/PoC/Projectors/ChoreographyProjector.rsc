@@ -16,7 +16,7 @@ map[str processName, ProcessFileData fileData] processFiles = ();
 set[str] uniqueProcessNames = {};
 int initialFileLines = 2;
 
-list[loc] projectChoreographyToProcessSpecifications(ChoreographyConstruct baseConstruct)
+list[loc] projectChoreographyToProcessSpecifications(ChoreographyConstruct baseConstruct, str defaultFileLocation)
 {
   processFiles = ();
   uniqueProcessNames = {};
@@ -25,7 +25,7 @@ list[loc] projectChoreographyToProcessSpecifications(ChoreographyConstruct baseC
   uniqueProcessNames = findUniqueProcessNamesForChoreographyConstruct(baseConstruct);
 
   // step 2 create the files
-  createProcessFiles(uniqueProcessNames);
+  createProcessFiles(uniqueProcessNames, defaultFileLocation);
   
   // step 3 fill the files with the required lines
   projectChoreographyConstruct(baseConstruct, false);
@@ -258,11 +258,11 @@ void appendLine(str processName, str line,  bool addSemicolon) {
     }
 }
 
-void createProcessFiles(set[str] uniqueProcessNames)
+void createProcessFiles(set[str] uniqueProcessNames, str defaultFileLocation)
 {
   for(str processName <- uniqueProcessNames)
   {
-    loc location =  |file:///M:/RascalTestNew/rascaltest/src/main/<processName>.proc|;
+    loc location =  |file:///<defaultFileLocation><processName>.proc|;
     list[str] firstLines = ["process <processName> \n", "\u007B \n"];
     processFiles[processName] = ProcessFileData(location, firstLines);
   }

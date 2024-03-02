@@ -1,9 +1,4 @@
 act
-EXITING;
-Bob_to_Alice_y1: Int;
-Alice_to_Bob_y1: Int;
+Bob_x1_is_11_Int;
 T;
-ELSE;
-REENTERING;
 Alice_x1_is_11_Int;
-Alice_x1_is_12_Int;

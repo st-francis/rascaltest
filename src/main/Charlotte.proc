@@ -3,6 +3,6 @@ process Charlotte
 
   TAU;
   TAU;
-  TAU;
-  x1 := 10:Int
+  x1 := 11:Int;
+  TAU
 }

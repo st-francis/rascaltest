@@ -1,8 +1,8 @@
 process David 
 { 
 
-  x1 := 10:Int;
   TAU;
   TAU;
-  TAU
+  TAU;
+  z1 := 11:Int
 }

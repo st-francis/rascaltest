@@ -7,12 +7,14 @@ import PoC::Machines::AldebaranMachine;
 import Boolean;
 import String;
 
-str defaultFileLocation = "M:/RascalTestNew/rascaltest/src/main/";
-str defaultmCRL2BinLocation = "M:/Programs/mCRL2/bin/";
-str defaultmCRL2Location = "M:/Programs/mCRL2/bin";
+str defaultFileLocation = "";
+str defaultmCRL2BinLocation = "MCRL2_BIN_LOCATION";
+str defaultmCRL2Location = "MCRL2_LOCATION";
 
-bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fileName)
+bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fileName, str defFileLocation)
 {
+  defaultFileLocation = defFileLocation;
+
   println("Checking!");
 
   cleanFiles(fileName);
@@ -65,8 +67,10 @@ bool isLTSDeadlockFree(str fileName)
 }
 
 
-bool doLTSIncludeEachOther(str lts1Name, str lts2Name)
+bool doLTSIncludeEachOther(str lts1Name, str lts2Name, str defFileLocation)
 {
+  defaultFileLocation = defFileLocation;
+
   bool lts1inlts2 = false;
   bool lts2inlts1 = false;
 
