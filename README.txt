@@ -24,4 +24,3 @@ If the following three conditions are successful then the execution is successfu
 
 This work is archived in Zenodo:
 https://zenodo.org/doi/10.5281/zenodo.10797005
-[![DOI](https://zenodo.org/badge/740186064.svg)](https://zenodo.org/doi/10.5281/zenodo.10797005)
