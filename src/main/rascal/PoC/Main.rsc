@@ -5,7 +5,7 @@ import IO;
 
 void main(list[str] args)
 {
-  cleanAndCreateResultsFile();
+  cleanAndCreateResultsFile("DEFAULT_FILE_LOCATION");
   processChoreography(args[0], "DEFAULT_FILE_LOCATION");
 }
 
