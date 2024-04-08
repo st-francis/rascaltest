@@ -4,14 +4,19 @@ import PoC::Machines::LabeledTransitionSystem;
 import List;
 import Set;
 import String;
+import IO;
+
 
 data AldebaranMachine = AldebaranMachine(str initalState, int nuOfStates, set[TransitionInfo] transitions);
 
 str GetMachineAsFileString(AldebaranMachine aldebaranMachine)
-{
+{  
+  appendToFile(|file:///M:/RascalTestNew/rascaltest/src/main/rascal/PoC/bin/results.txt|, "<size(aldebaranMachine.transitions)>,");
+  appendToFile(|file:///M:/RascalTestNew/rascaltest/src/main/rascal/PoC/bin/results.txt|, "<aldebaranMachine.nuOfStates>,");
+  
   str content = "des (<aldebaranMachine.initalState>, <size(aldebaranMachine.transitions)>, <aldebaranMachine.nuOfStates>)\n";
   for(TransitionInfo transitionInfo <- aldebaranMachine.transitions)
-  {   
+  {     
       str argumentStr = getArgumentsStr(transitionInfo.transitionLabel.arguments);
       content += "(<transitionInfo.prevStateNo>,\"<transitionInfo.transitionLabel.description><argumentStr>\",<transitionInfo.nextStateNo>)\n";
   }

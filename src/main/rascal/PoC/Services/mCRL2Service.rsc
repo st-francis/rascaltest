@@ -8,8 +8,8 @@ import Boolean;
 import String;
 
 str defaultFileLocation = "";
-str defaultmCRL2BinLocation = "MCRL2_BIN_LOCATION";
-str defaultmCRL2Location = "MCRL2_LOCATION";
+str defaultmCRL2BinLocation = "M:/Programs/mCRL2/bin/";
+str defaultmCRL2Location = "M:/Programs/mCRL2/bin";
 
 bool IsAldebaranMachineDeadlockFree(str labels, AldebaranMachine machine, str fileName, str defFileLocation)
 {

@@ -43,6 +43,7 @@ void processChoreography(str choreographyFileName, str defaultFileLocation)
 
   // (Action C) Check deadlock-freedom
   bool isDeadockFreeChoreo      = isLTSDeadlockFree(labeledTransitionSystem, choreographyFile, defaultFileLocation);
+  appendToFile(|file:///M:/RascalTestNew/rascaltest/src/main/rascal/PoC/bin/results.txt|, "<isDeadockFreeChoreo>,");
 
   // (Action D) Parse process files based on choreography AST
   list[loc] processFiles = projectChoreographyToProcessSpecifications(choreo.top.content.choreographyConstruct, defaultFileLocation);
@@ -56,6 +57,8 @@ void processChoreography(str choreographyFileName, str defaultFileLocation)
 
   // (Action F) Check if machines are equivalent
   bool areMachinesEquivalent = doLTSIncludeEachOther(choreographyFile, processCompositionFile, defaultFileLocation);
+  appendToFile(|file:///M:/RascalTestNew/rascaltest/src/main/rascal/PoC/bin/results.txt|, "<areMachinesEquivalent>");
+
 }
 
 list[AChoreographyProcess] parseProcessFiles(list[loc] processFiles) {

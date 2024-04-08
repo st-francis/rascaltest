@@ -2,5 +2,10 @@ process Bob
 { 
 
   TAU;
-  x1 := 11:Int
+  Alice?y1;
+  if(Bob.y1!=11){
+  Alice?y1
+  }else{
+  Alice!(12:Int)
+  }
 }

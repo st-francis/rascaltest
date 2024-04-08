@@ -1,5 +1,14 @@
 choreo testChoreo
 {
   Alice.x1 := 11:Int;
-  Bob.x1 := 11:Int
+  Alice (11:Int) -> Bob.y1;
+
+  if(Alice.x1 == 11 && Bob.y1 == 11)
+  {
+    Alice (12:Int) -> Bob.y1
+  }
+  else
+  {
+    Bob (12: Int) -> Alice.x1
+  }
 }

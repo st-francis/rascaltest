@@ -1,4 +1,6 @@
 act
-Bob_x1_is_11_Int;
+Bob_to_Alice_x1: Int;
+Alice_to_Bob_y1: Int;
 T;
+ELSE;
 Alice_x1_is_11_Int;
